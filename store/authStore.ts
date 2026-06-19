@@ -46,12 +46,47 @@ export const useAuthStore = create<AuthState>()(
       accessToken: null,
       refreshToken: null,
 
-      login: async (email, _password) => {
+      login: async (email, password) => {
         set({ isLoading: true });
-        await new Promise((r) => setTimeout(r, 800)); // simulate API
-        const user = MOCK_USERS[email];
-        if (!user) throw new Error("Invalid credentials");
-        set({ user, isAuthenticated: true, isLoading: false, accessToken: null, refreshToken: null });
+        try {
+          const response = await fetch('/api/v1/auth/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message ?? 'Invalid credentials');
+          }
+
+          const res = await response.json();
+          const { data } = res;
+
+          const userData: User = {
+            id: data.user.id,
+            name: data.user.name,
+            email: data.user.email,
+            role: data.user.role,
+            tenantId: data.user.tenantId ?? undefined,
+            createdAt: data.user.createdAt,
+            avatarUrl: data.user.avatarUrl ?? undefined,
+            phone: data.user.phone ?? undefined,
+          };
+
+          set({
+            user: userData,
+            isAuthenticated: true,
+            isLoading: false,
+            accessToken: data.accessToken,
+            refreshToken: data.refreshToken,
+          });
+        } catch (err) {
+          set({ isLoading: false });
+          throw err;
+        }
       },
 
       signup: async (name, email, password, role, phone) => {
