@@ -16,16 +16,16 @@ export default function SignupPage() {
   const [role, setRole] = useState<UserRole>("vendor_admin");
   const [error, setError] = useState("");
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
-    try {
-      await signup(name, email, password, role);
-      router.push("/dashboard");
-    } catch {
-      setError("Something went wrong. Please try again.");
-    }
-  }
+   async function handleSubmit(e: React.FormEvent) {
+     e.preventDefault();
+     setError("");
+     try {
+       await signup(name, email, password, role, phone);
+       router.push("/dashboard");
+     } catch (err: any) {
+       setError(err.message ?? "Something went wrong. Please try again.");
+     }
+   }
 
   return (
     <div className="animate-fade-up">
@@ -43,8 +43,8 @@ export default function SignupPage() {
         {/* Role selector */}
         <div className="grid grid-cols-2 gap-3 mb-6">
           {([
-            { value: "vendor_admin", label: "Venue Owner", icon: "🏟️", desc: "Manage venues & courts" },
-            { value: "player", label: "Player", icon: "⚽", desc: "Book courts & play" },
+            { value: "VENUE_OWNER", label: "Venue Owner", icon: "🏟️", desc: "Manage venues & courts" },
+            { value: "PLAYER", label: "Player", icon: "⚽", desc: "Book courts & play" },
           ] as { value: UserRole; label: string; icon: string; desc: string }[]).map((r) => (
             <button
               key={r.value}

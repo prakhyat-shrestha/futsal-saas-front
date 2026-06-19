@@ -1,5 +1,5 @@
 // ─── Auth & Roles ────────────────────────────────────────────────────────────
-export type UserRole = "super_admin" | "vendor_admin" | "player";
+export type UserRole = "SUPER_ADMIN" | "VENUE_OWNER" | "PLAYER";
 
 export interface User {
   id: string;
@@ -9,6 +9,7 @@ export interface User {
   avatarUrl?: string;
   tenantId?: string; // vendor's org ID
   createdAt: string;
+  phone?: string;
 }
 
 // ─── Tenant (Vendor / Business) ──────────────────────────────────────────────

@@ -6,15 +6,17 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  accessToken: string | null;
+  refreshToken: string | null;
 
   login: (email: string, password: string) => Promise<void>;
-  signup: (name: string, email: string, password: string, role: UserRole) => Promise<void>;
+  signup: (name: string, email: string, password: string, role: UserRole, phone: string) => Promise<void>;
   logout: () => void;
   setUser: (user: User) => void;
 }
 
 // Mock users for demo
-const MOCK_USERS: Record<string, User> = {
+let MOCK_USERS: Record<string, User> = {
   "admin@futsalpro.com": {
     id: "u1",
     name: "Alex Ramos",
@@ -22,6 +24,7 @@ const MOCK_USERS: Record<string, User> = {
     role: "vendor_admin",
     tenantId: "t1",
     createdAt: new Date().toISOString(),
+    phone: undefined,
   },
   "player@futsalpro.com": {
     id: "u2",
@@ -30,6 +33,7 @@ const MOCK_USERS: Record<string, User> = {
     role: "player",
     tenantId: "t1",
     createdAt: new Date().toISOString(),
+    phone: undefined,
   },
 };
 
@@ -39,30 +43,64 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       isLoading: false,
+      accessToken: null,
+      refreshToken: null,
 
       login: async (email, _password) => {
         set({ isLoading: true });
         await new Promise((r) => setTimeout(r, 800)); // simulate API
         const user = MOCK_USERS[email];
         if (!user) throw new Error("Invalid credentials");
-        set({ user, isAuthenticated: true, isLoading: false });
+        set({ user, isAuthenticated: true, isLoading: false, accessToken: null, refreshToken: null });
       },
 
-      signup: async (name, email, _password, role) => {
+      signup: async (name, email, password, role, phone) => {
         set({ isLoading: true });
-        await new Promise((r) => setTimeout(r, 800));
-        const newUser: User = {
-          id: `u_${Date.now()}`,
-          name,
-          email,
-          role,
-          tenantId: `t_${Date.now()}`,
-          createdAt: new Date().toISOString(),
-        };
-        set({ user: newUser, isAuthenticated: true, isLoading: false });
+        try {
+          const response = await fetch('/api/v1/auth/register', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password, name, phone, role }),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message ?? 'Signup failed');
+          }
+
+           const res = await response.json();
+
+          
+
+          const { data } = res;
+           console.log("data",data);
+
+           const userData: User = {
+             id: data.user.id,
+             name: data.user.name,
+             email: data.user.email,
+             role: data.user.role,
+             tenantId: data.user.tenantId ?? undefined,
+             createdAt: data.user.createdAt,
+             avatarUrl: data.user.avatarUrl ?? undefined,
+             phone: data.user.phone ?? undefined,
+           };
+           set({ 
+             user: userData, 
+             isAuthenticated: true, 
+             isLoading: false,
+             accessToken: data.accessToken,
+             refreshToken: data.refreshToken
+           });
+        } catch (err) {
+          set({ isLoading: false });
+          throw err;
+        }
       },
 
-      logout: () => set({ user: null, isAuthenticated: false }),
+      logout: () => set({ user: null, isAuthenticated: false, accessToken: null, refreshToken: null }),
 
       setUser: (user) => set({ user, isAuthenticated: true }),
     }),
