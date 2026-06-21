@@ -7,11 +7,18 @@ import { useVenueStore } from "@/store/venueStore";
 import { formatCurrency, formatDate, STATUS_COLORS } from "@/lib/utils";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
-  const { user } = useAuthStore();
+  const { user, logout } = useAuthStore();
   const { bookings } = useBookingStore();
   const { venues, courts } = useVenueStore();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    logout();
+    router.push("/");
+  };
 
   const today = new Date().toISOString().split("T")[0];
   const tenantBookings = bookings.filter((b) => b.tenantId === user?.tenantId);
@@ -38,11 +45,19 @@ export default function DashboardPage() {
   return (
     <div className="p-8 animate-fade-in">
       {/* Header */}
-      <div className="mb-10">
-        <h1 className="font-syne font-bold text-3xl mb-1">
-          Good {getGreeting()}, {user?.name?.split(" ")[0]} 👋
-        </h1>
-        <p className="font-dm text-white/40 text-sm">{formatDate(today)}</p>
+      <div className="mb-10 flex items-start justify-between">
+        <div>
+          <h1 className="font-syne font-bold text-3xl mb-1">
+            Good {getGreeting()}, {user?.name?.split(" ")[0]} 👋
+          </h1>
+          <p className="font-dm text-white/40 text-sm">{formatDate(today)}</p>
+        </div>
+        <button
+          onClick={handleLogout}
+          className="font-dm text-sm px-4 py-2 rounded-xl border border-white/10 text-white/70 hover:text-white hover:bg-white/5 transition-colors shrink-0"
+        >
+          Logout
+        </button>
       </div>
 
       {/* Stats */}
