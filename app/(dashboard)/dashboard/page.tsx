@@ -47,14 +47,14 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="mb-10 flex items-start justify-between">
         <div>
-          <h1 className="font-syne font-bold text-3xl mb-1">
+          <h1 className="font-syne font-bold text-3xl mb-1 text-gray-900">
             Good {getGreeting()}, {user?.name?.split(" ")[0]} 👋
           </h1>
-          <p className="font-dm text-white/40 text-sm">{formatDate(today)}</p>
+          <p className="font-dm text-gray-500 text-sm">{formatDate(today)}</p>
         </div>
         <button
           onClick={handleLogout}
-          className="font-dm text-sm px-4 py-2 rounded-xl border border-white/10 text-white/70 hover:text-white hover:bg-white/5 transition-colors shrink-0"
+          className="font-dm text-sm px-4 py-2 rounded-xl border border-gray-200 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors shrink-0"
         >
           Logout
         </button>
@@ -71,9 +71,9 @@ export default function DashboardPage() {
             <div className="flex items-start justify-between mb-4">
               <span className="text-2xl">{stat.icon}</span>
             </div>
-            <div className="font-syne font-bold text-2xl mb-1">{stat.value}</div>
-            <div className="font-dm text-sm text-white/60">{stat.label}</div>
-            <div className="font-dm text-xs text-white/30 mt-1">{stat.sub}</div>
+            <div className="font-syne font-bold text-2xl mb-1 text-gray-900">{stat.value}</div>
+            <div className="font-dm text-sm text-gray-600">{stat.label}</div>
+            <div className="font-dm text-xs text-gray-400 mt-1">{stat.sub}</div>
           </div>
         ))}
       </div>
@@ -82,33 +82,33 @@ export default function DashboardPage() {
         {/* Recent Bookings */}
         <div className="lg:col-span-2 glass rounded-2xl p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="font-syne font-semibold text-lg">Recent Bookings</h2>
-            <Link href="/booking" className="text-green-400 hover:text-green-300 text-sm font-dm transition-colors">
+            <h2 className="font-syne font-semibold text-lg text-gray-900">Recent Bookings</h2>
+            <Link href="/booking" className="text-green-600 hover:text-green-700 text-sm font-dm transition-colors">
               View all →
             </Link>
           </div>
           <div className="space-y-3">
             {recentBookings.length === 0 ? (
-              <p className="font-dm text-white/30 text-sm text-center py-8">No bookings yet</p>
+              <p className="font-dm text-gray-400 text-sm text-center py-8">No bookings yet</p>
             ) : (
               recentBookings.map((booking) => {
                 const court = courts.find((c) => c.id === booking.courtId);
                 const venue = tenantVenues.find((v) => v.id === booking.venueId);
                 return (
-                  <div key={booking.id} className="flex items-center gap-4 p-4 bg-white/3 rounded-xl hover:bg-white/5 transition-colors">
-                    <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center text-green-400 font-syne font-bold text-sm shrink-0">
+                  <div key={booking.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                    <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center text-green-700 font-syne font-bold text-sm shrink-0">
                       {court?.name.slice(0, 2).toUpperCase() ?? "?"}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-dm text-sm text-white font-medium truncate">
+                      <p className="font-dm text-sm text-gray-900 font-medium truncate">
                         {booking.playerName} — {court?.name}
                       </p>
-                      <p className="font-dm text-xs text-white/40 mt-0.5">
+                      <p className="font-dm text-xs text-gray-500 mt-0.5">
                         {venue?.name} · {formatDate(booking.date)} · {booking.timeSlot.start}–{booking.timeSlot.end}
                       </p>
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
-                      <span className="font-dm text-sm text-white/60">{formatCurrency(booking.totalPrice)}</span>
+                      <span className="font-dm text-sm text-gray-600">{formatCurrency(booking.totalPrice)}</span>
                       <span className={`text-xs font-dm px-2.5 py-1 rounded-full border capitalize ${STATUS_COLORS[booking.status]}`}>
                         {booking.status}
                       </span>
@@ -123,9 +123,9 @@ export default function DashboardPage() {
         {/* Venues */}
         <div className="glass rounded-2xl p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="font-syne font-semibold text-lg">Your Venues</h2>
+            <h2 className="font-syne font-semibold text-lg text-gray-900">Your Venues</h2>
             {user?.role === "vendor_admin" && (
-              <Link href="/admin" className="text-green-400 hover:text-green-300 text-sm font-dm transition-colors">
+              <Link href="/admin" className="text-green-600 hover:text-green-700 text-sm font-dm transition-colors">
                 Manage →
               </Link>
             )}
@@ -135,13 +135,13 @@ export default function DashboardPage() {
               const venueCourts = courts.filter((c) => c.venueId === venue.id);
               const venueBookings = todayBookings.filter((b) => b.venueId === venue.id);
               return (
-                <div key={venue.id} className="p-4 bg-white/3 rounded-xl hover:bg-white/5 transition-colors">
+                <div key={venue.id} className="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="font-syne font-semibold text-sm">{venue.name}</p>
+                    <p className="font-syne font-semibold text-sm text-gray-900">{venue.name}</p>
                     <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
                   </div>
-                  <p className="font-dm text-xs text-white/40 mb-3">{venue.city}</p>
-                  <div className="flex items-center gap-4 text-xs font-dm text-white/50">
+                  <p className="font-dm text-xs text-gray-500 mb-3">{venue.city}</p>
+                  <div className="flex items-center gap-4 text-xs font-dm text-gray-500">
                     <span>{venueCourts.length} courts</span>
                     <span>{venueBookings.length} today</span>
                   </div>

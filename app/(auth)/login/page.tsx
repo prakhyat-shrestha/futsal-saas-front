@@ -24,7 +24,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="animate-fade-up">
+    <div className="w-full max-w-md mx-auto animate-fade-up">
       {/* Logo */}
       <div className="flex items-center justify-center gap-2 mb-10">
         <div className="w-9 h-9 bg-green-500 rounded-xl flex items-center justify-center">
