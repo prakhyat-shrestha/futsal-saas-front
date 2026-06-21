@@ -7,9 +7,9 @@ export function CTA() {
                 <h2 className="font-syne font-extrabold text-4xl md:text-5xl mb-6">
                     Ready to level up<br />your venue?
                 </h2>
-                <p className="font-dm text-white/40 text-lg mb-10">
-                    Join hundreds of venue owners already using FutsalPro.
-                </p>
+                 <p className="font-dm text-white text-lg mb-10">
+                     Join hundreds of venue owners already using FutsalPro.
+                 </p>
                 <Link
                     href="/signup"
                     className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-400 text-black font-syne font-bold px-10 py-4 rounded-xl text-base transition-all hover:scale-[1.02] glow-green"
