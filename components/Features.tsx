@@ -2,11 +2,14 @@
 
 export function Features() {
     return (
-
         <section id="features" className="relative z-10 max-w-7xl mx-auto px-8 py-24">
             <div className="text-center mb-16">
-                <h2 className="font-syne font-bold text-4xl md:text-5xl mb-4">Everything you need.</h2>
-                <p className="font-dm text-white/40 text-lg max-w-xl mx-auto">Built for venue owners who want to scale.</p>
+                <h2 className="font-syne font-bold text-4xl md:text-5xl mb-4 text-gray-900">
+                    Everything you need.
+                </h2>
+                <p className="font-dm text-gray-500 text-lg max-w-xl mx-auto">
+                    Built for venue owners who want to scale.
+                </p>
             </div>
 
             <div className="grid md:grid-cols-3 gap-6">
@@ -17,15 +20,14 @@ export function Features() {
                         style={{ animationDelay: `${i * 100}ms` }}
                     >
                         <div className="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-green-500/20 transition-colors">
-                            <span className="text-green-400 text-2xl">{f.icon}</span>
+                            <span className="text-green-600 text-2xl">{f.icon}</span>
                         </div>
-                        <h3 className="font-syne font-semibold text-lg mb-3">{f.title}</h3>
-                        <p className="font-dm text-white/40 text-sm leading-relaxed">{f.desc}</p>
+                        <h3 className="font-syne font-semibold text-lg mb-3 text-gray-900">{f.title}</h3>
+                        <p className="font-dm text-gray-500 text-sm leading-relaxed">{f.desc}</p>
                     </div>
                 ))}
             </div>
         </section>
-
     )
 }
 

@@ -35,16 +35,16 @@ export function Navbar() {
             </div>
           </div>
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
-            <Link href="/login">
-              <Button variant="ghost" className="text-gray-500 hover:text-white">
-                Log in
-              </Button>
-            </Link>
-            <Link href="/signup">
-              <Button variant="default" className="ml-3 text-gray-500 hover:text-black">
-                Sign up
-              </Button>
-            </Link>
+           <Link href="/login">
+            <Button variant="ghost">
+              Log in
+            </Button>
+          </Link>
+          <Link href="/signup">
+            <Button variant="default" className="ml-3">
+              Sign up
+            </Button>
+          </Link>
           </div>
           {/* <MobileMenu /> */}
         </div>

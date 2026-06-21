@@ -21,7 +21,7 @@ export function Hero() {
                <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
                  <span className="block xl:inline">Run Your Futsal Empire.
                  </span>{" "}
-                 <span className="block text-primary-foreground xl:inline">One platform. Multiple venues. Zero chaos.</span>
+                 <span className="block text-primary xl:inline">One platform. Multiple venues. Zero chaos.</span>
                </h1>
               <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
                Built for the hustlers running futsal venues across Nepal. FutsalPro gives you the tools of a big operation, without the complexity.    

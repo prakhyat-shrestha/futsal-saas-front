@@ -61,11 +61,8 @@
   * {
     @apply border-border;
   }
-    html {
-    @apply dark;
-  }
   body {
-    @apply bg-[#080B0F] text-white;
+     @apply bg-background text-foreground;
   }
 }
 
