@@ -29,6 +29,7 @@ const MOCK_VENUES: Venue[] = [
     city: "Kathmandu",
     openTime: "06:00",
     closeTime: "23:00",
+    imageUrl: "https://images.unsplash.com/photo-1556056504-5c7696c4c28d?w=800&q=80",
     createdAt: new Date().toISOString(),
   },
   {
@@ -39,6 +40,7 @@ const MOCK_VENUES: Venue[] = [
     city: "Patan",
     openTime: "07:00",
     closeTime: "22:00",
+    imageUrl: "https://images.unsplash.com/photo-1577223625816-7546f13df25d?w=800&q=80",
     createdAt: new Date().toISOString(),
   },
 ];
