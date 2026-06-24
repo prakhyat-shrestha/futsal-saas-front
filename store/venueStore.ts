@@ -2,12 +2,18 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Venue, Court, CourtSurface } from "@/types";
 
+import { useAuthStore } from "@/store/authStore";
+
 interface VenueState {
   venues: Venue[];
   courts: Court[];
+  isLoading: boolean;
+  error: string | null;
+ 
   selectedVenueId: string | null;
 
   setSelectedVenue: (id: string) => void;
+  fetchVenues: () => Promise<void>;
   addVenue: (venue: Omit<Venue, "id" | "createdAt">) => void;
   updateVenue: (id: string, data: Partial<Venue>) => void;
   deleteVenue: (id: string) => void;
@@ -18,12 +24,14 @@ interface VenueState {
 
   getVenuesByTenant: (tenantId: string) => Venue[];
   getCourtsByVenue: (venueId: string) => Court[];
+
+  reset: () => void;
 }
 
 const MOCK_VENUES: Venue[] = [
   {
     id: "v1",
-    tenantId: "t1",
+    ownerId: "t1",
     name: "Arena North",
     address: "123 Sports Blvd",
     city: "Kathmandu",
@@ -34,7 +42,7 @@ const MOCK_VENUES: Venue[] = [
   },
   {
     id: "v2",
-    tenantId: "t1",
+    ownerId: "t1",
     name: "Downtown Court",
     address: "45 Central Ave",
     city: "Patan",
@@ -58,12 +66,101 @@ export const useVenueStore = create<VenueState>()(
       courts: MOCK_COURTS,
       selectedVenueId: "v1",
 
+      isLoading:false,
+      error:null,
       setSelectedVenue: (id) => set({ selectedVenueId: id }),
 
-      addVenue: (data) => {
-        const venue: Venue = { ...data, id: `v_${Date.now()}`, createdAt: new Date().toISOString() };
-        set((s) => ({ venues: [...s.venues, venue] }));
+      fetchVenues: async () => {
+        set({ isLoading: true, error: null });
+        try {
+          const token = useAuthStore.getState().accessToken;
+
+          const res = await fetch("/api/v1/venues", {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          const json = await res.json();
+
+          if (!res.ok || !json.success) {
+            throw new Error(json?.message ?? "Failed to load venues.");
+          }
+
+          const venues: Venue[] = json.data;
+          set({
+            venues,
+            selectedVenueId: venues[0]?.id ?? null,
+            isLoading: false,
+          });
+        } catch (err: any) {
+          set({ isLoading: false, error: err.message ?? "Something went wrong." });
+        }
       },
+
+      // addVenue: (data) => {
+      //   const venue: Venue = { ...data, id: `v_${Date.now()}`, createdAt: new Date().toISOString() };
+      //   set((s) => ({ venues: [...s.venues, venue] }));
+      // },
+
+      // addVenue: async (data) => {
+      //     set({ isLoading: true, error: null });
+      //     try {
+      //       const token = useAuthStore.getState().accessToken; // adjust to however you store the JWT
+
+
+      //       const res = await fetch('/api/v1/venues', {
+      //         method: "POST",
+      //         headers: {
+      //           "Content-Type": "application/json",
+      //           Authorization: `Bearer ${token}`,
+      //         },
+      //         body: JSON.stringify(data),
+      //       });
+
+      //       if (!res.ok) {
+      //         const errBody = await res.json().catch(() => null);
+      //         throw new Error(errBody?.message ?? "Failed to create venue.");
+      //       }
+
+      //       const venue: Venue = await res.json();
+      //       set((s) => ({ venues: [...s.venues, venue], isLoading: false }));
+      //       return venue;
+      //     } catch (err: any) {
+      //       set({ isLoading: false, error: err.message ?? "Something went wrong." });
+      //       throw err;
+      //     }
+      //   },
+
+        addVenue: async (data) => {
+          set({ isLoading: true, error: null });
+          try {
+            const token = useAuthStore.getState().accessToken;
+
+            const res = await fetch('/api/v1/venues', {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify(data),
+            });
+
+            const json = await res.json();
+
+            if (!res.ok || !json.success) {
+              throw new Error(json?.message ?? "Failed to create venue.");
+            }
+
+            const venue: Venue = json.data;
+            set((s) => ({ venues: [...s.venues, venue], isLoading: false }));
+            return venue;
+          } catch (err: any) {
+            set({ isLoading: false, error: err.message ?? "Something went wrong." });
+            throw err;
+          }
+        },
 
       updateVenue: (id, data) =>
         set((s) => ({ venues: s.venues.map((v) => (v.id === id ? { ...v, ...data } : v)) })),
@@ -82,9 +179,19 @@ export const useVenueStore = create<VenueState>()(
       deleteCourt: (id) =>
         set((s) => ({ courts: s.courts.filter((c) => c.id !== id) })),
 
-      getVenuesByTenant: (tenantId) => get().venues.filter((v) => v.tenantId === tenantId),
+      getVenuesByTenant: (tenantId) => get().venues.filter((v) => v.ownerId === tenantId),
       getCourtsByVenue: (venueId) => get().courts.filter((c) => c.venueId === venueId),
+      reset: () =>
+        set({
+          venues: [],
+          selectedVenueId: null,
+          isLoading: false,
+          error: null,
+        }),
     }),
-    { name: "futsal-venues" }
+    
+    { name: "futsal-venues" ,
+      partialize: (state) => ({ courts: state.courts }),
+    }
   )
 );

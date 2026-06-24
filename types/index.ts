@@ -7,7 +7,7 @@ export interface User {
   email: string;
   role: UserRole;
   avatarUrl?: string;
-  tenantId?: string; // vendor's org ID
+  //tenantId?: string; // vendor's org ID
   createdAt: string;
   phone?: string;
 }
@@ -25,13 +25,17 @@ export interface Tenant {
 // ─── Venue ───────────────────────────────────────────────────────────────────
 export interface Venue {
   id: string;
-  tenantId: string;
+  ownerId: string;
   name: string;
+  description?:string;
   address: string;
   city: string;
   imageUrl?: string;
-  openTime: string;  // "06:00"
-  closeTime: string; // "23:00"
+  latitude: number;  // "06:00"
+  longitude: number; // "23:00"
+  phone?:string;
+  email?:string;
+  isActive:boolean;
   createdAt: string;
 }
 

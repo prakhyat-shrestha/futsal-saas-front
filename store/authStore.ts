@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { User, UserRole } from "@/types";
+import { useVenueStore } from "@/store/venueStore";
 
 interface AuthState {
   user: User | null;
@@ -70,7 +71,7 @@ export const useAuthStore = create<AuthState>()(
             name: data.user.name,
             email: data.user.email,
             role: data.user.role,
-            tenantId: data.user.tenantId ?? undefined,
+           // tenantId: data.user.tenantId ?? undefined,
             createdAt: data.user.createdAt,
             avatarUrl: data.user.avatarUrl ?? undefined,
             phone: data.user.phone ?? undefined,
@@ -117,7 +118,7 @@ export const useAuthStore = create<AuthState>()(
              name: data.user.name,
              email: data.user.email,
              role: data.user.role,
-             tenantId: data.user.tenantId ?? undefined,
+             //tenantId: data.user.tenantId ?? undefined,
              createdAt: data.user.createdAt,
              avatarUrl: data.user.avatarUrl ?? undefined,
              phone: data.user.phone ?? undefined,
@@ -135,8 +136,11 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      logout: () => set({ user: null, isAuthenticated: false, accessToken: null, refreshToken: null }),
-
+      logout: () => {
+        set({ user: null, isAuthenticated: false, accessToken: null, refreshToken: null });
+        useVenueStore.getState().reset();
+      },
+        
       setUser: (user) => set({ user, isAuthenticated: true }),
     }),
     { name: "futsal-auth" }

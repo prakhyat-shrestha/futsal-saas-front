@@ -1,13 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Search, SlidersHorizontal, ChevronDown } from "lucide-react";
+import { Plus, Search, SlidersHorizontal, ChevronDown,Building2 } from "lucide-react";
 import { useVenueStore } from "@/store/venueStore";
+import { useAuthStore } from "@/store/authStore";
 
 export default function MyVenuesPage() {
-  const { venues } = useVenueStore();
+  const { venues,fetchVenues,getVenuesByTenant  } = useVenueStore();
   const [search, setSearch] = useState("");
+    const { user } = useAuthStore();
+
+    useEffect(() => {
+    fetchVenues();
+  }, [fetchVenues]);
+
+  const venuesByOwner = user ? getVenuesByTenant(user.id) : [];
+
+  console.log("venuews by owner",venuesByOwner);
 
   return (
     <div className="p-8">
@@ -49,7 +59,7 @@ export default function MyVenuesPage() {
 
       {/* Venue grid */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {venues
+        {venuesByOwner
           .filter((v) => v.name.toLowerCase().includes(search.toLowerCase()))
           .map((venue) => (
             <VenueCard key={venue.id} venue={venue} />
@@ -89,11 +99,19 @@ function VenueCard({ venue }: { venue: any }) {
     <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
       {/* Image */}
       <div className="relative h-40">
-        <img
-          src={venue.imageUrl}
-          alt={venue.name}
-          className={`w-full h-full object-cover ${!isActive ? "grayscale" : ""}`}
-        />
+        {venue.imageUrl ? (
+          <img
+            src={venue.imageUrl}
+            alt={venue.name}
+            className={`w-full h-full object-cover ${!isActive ? "grayscale" : ""}`}
+          />
+        ) : (
+          <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+            <Building2 size={28} className="text-gray-300" />
+          </div>
+        )}
+
+
         <span
           className={`absolute top-3 left-3 inline-flex items-center gap-1.5 text-xs font-dm font-medium px-2.5 py-1 rounded-full ${
             isActive ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-600"
