@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
+import { User } from "@/types";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,8 +17,12 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     try {
-      await login(email, password);
+    const loggedInUser = await login(email, password);
+    if (loggedInUser.role === "PLAYER") {
+      router.push("/play");
+    } else {
       router.push("/dashboard");
+    }
     } catch {
       setError("Invalid email or password.");
     }

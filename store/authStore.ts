@@ -10,8 +10,8 @@ interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
 
-  login: (email: string, password: string) => Promise<void>;
-  signup: (name: string, email: string, password: string, role: UserRole, phone: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User>;
+  signup: (name: string, email: string, password: string, role: UserRole, phone: string) => Promise<User>;
   logout: () => void;
   setUser: (user: User) => void;
 }
@@ -84,6 +84,7 @@ export const useAuthStore = create<AuthState>()(
             accessToken: data.accessToken,
             refreshToken: data.refreshToken,
           });
+          return userData;
         } catch (err) {
           set({ isLoading: false });
           throw err;
@@ -130,6 +131,7 @@ export const useAuthStore = create<AuthState>()(
              accessToken: data.accessToken,
              refreshToken: data.refreshToken
            });
+            return userData;
         } catch (err) {
           set({ isLoading: false });
           throw err;

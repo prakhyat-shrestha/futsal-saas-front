@@ -20,8 +20,12 @@ export default function SignupPage() {
      e.preventDefault();
      setError("");
      try {
-       await signup(name, email, password, role, phone);
-       router.push("/dashboard");
+       const newUser = await signup(name, email, password, role, phone);
+        if (newUser.role === "PLAYER") {
+          router.push("/play");
+        } else {
+          router.push("/dashboard");
+        }
      } catch (err: any) {
        setError(err.message ?? "Something went wrong. Please try again.");
      }
