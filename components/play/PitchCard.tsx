@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Star, MapPin } from "lucide-react";
+import { useBookingDraftStore } from "@/store/bookingDraftStore";
 
 export interface Pitch {
   id: string;
@@ -17,7 +19,30 @@ export interface Pitch {
 }
 
 export function PitchCard({ pitch }: { pitch: Pitch }) {
+  const router = useRouter();
+  const setDraft = useBookingDraftStore((s) => s.setDraft);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(pitch.availableSlots[0] ?? null);
+
+    function handleBook() {
+    if (!selectedSlot) return;
+    const [start, end] = [selectedSlot, addOneHour(selectedSlot)];
+
+    setDraft({
+      venueId: pitch.id,
+      venueName: pitch.name,
+      courtId: `${pitch.id}-court`, // swap for real court id once wired to API
+      courtName: "Pitch 1",
+      pitchType: pitch.pitchType,
+      imageUrl: pitch.imageUrl,
+      date: new Date().toISOString().split("T")[0],
+      dateLabel: "Saturday, 18th Nov", // swap for real selected date once a date picker exists
+      timeRange: `${start} - ${end}`,
+      pricePerHour: pitch.priceFrom,
+      totalDue: pitch.priceFrom,
+    });
+
+    router.push("/play/checkout");
+  }
 
   return (
     <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
@@ -72,10 +97,23 @@ export function PitchCard({ pitch }: { pitch: Pitch }) {
           })}
         </div>
 
-        <button className="w-full bg-green-500 hover:bg-green-400 text-black font-syne font-semibold py-3 rounded-xl text-sm transition-colors">
+        <button  
+        onClick={handleBook}
+        className="w-full bg-green-500 hover:bg-green-400 text-black font-syne font-semibold py-3 rounded-xl text-sm transition-colors">
           Book Instant Pitch
         </button>
       </div>
     </div>
   );
 }
+
+
+function addOneHour(time: string): string {
+  const [h, m] = time.split(":").map(Number);
+  const next = (h + 1) % 24;
+  return `${String(next).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
+
+
+
