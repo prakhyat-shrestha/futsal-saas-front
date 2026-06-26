@@ -17,12 +17,14 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     try {
-    const loggedInUser = await login(email, password);
-    if (loggedInUser.role === "PLAYER") {
-      router.push("/play");
-    } else {
-      router.push("/dashboard");
-    }
+      const loggedInUser = await login(email, password);
+      if (loggedInUser.role === "ADMIN") {
+        router.push("/admin");
+      } else if (loggedInUser.role === "PLAYER") {
+        router.push("/play");
+      } else {
+        router.push("/dashboard");
+      }
     } catch {
       setError("Invalid email or password.");
     }
@@ -35,12 +37,18 @@ export default function LoginPage() {
         <div className="w-9 h-9 bg-green-500 rounded-xl flex items-center justify-center">
           <span className="text-black font-syne font-black">F</span>
         </div>
-        <span className="font-syne font-bold text-2xl text-gray-900">FutsalPro</span>
+        <span className="font-syne font-bold text-2xl text-gray-900">
+          FutsalPro
+        </span>
       </div>
 
       <div className="glass rounded-2xl p-8">
-        <h1 className="font-syne font-bold text-2xl mb-1 text-gray-900">Welcome back</h1>
-        <p className="font-dm text-gray-500 text-sm mb-8">Sign in to your account</p>
+        <h1 className="font-syne font-bold text-2xl mb-1 text-gray-900">
+          Welcome back
+        </h1>
+        <p className="font-dm text-gray-500 text-sm mb-8">
+          Sign in to your account
+        </p>
 
         {/* Demo credentials hint */}
         <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-4 mb-6 text-xs font-dm text-green-700">
@@ -51,7 +59,9 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block font-dm text-sm text-gray-700 mb-2">Email</label>
+            <label className="block font-dm text-sm text-gray-700 mb-2">
+              Email
+            </label>
             <input
               type="email"
               value={email}
@@ -62,7 +72,9 @@ export default function LoginPage() {
             />
           </div>
           <div>
-            <label className="block font-dm text-sm text-gray-700 mb-2">Password</label>
+            <label className="block font-dm text-sm text-gray-700 mb-2">
+              Password
+            </label>
             <input
               type="password"
               value={password}
@@ -90,7 +102,10 @@ export default function LoginPage() {
 
         <p className="font-dm text-gray-500 text-sm text-center mt-6">
           Don't have an account?{" "}
-          <Link href="/signup" className="text-green-600 hover:text-green-700 transition-colors">
+          <Link
+            href="/signup"
+            className="text-green-600 hover:text-green-700 transition-colors"
+          >
             Sign up
           </Link>
         </p>

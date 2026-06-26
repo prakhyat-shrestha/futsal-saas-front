@@ -1,5 +1,5 @@
 // ─── Auth & Roles ────────────────────────────────────────────────────────────
-export type UserRole = "SUPER_ADMIN" | "VENUE_OWNER" | "PLAYER";
+export type UserRole = "ADMIN" | "VENUE_OWNER" | "PLAYER";
 
 export interface User {
   id: string;
