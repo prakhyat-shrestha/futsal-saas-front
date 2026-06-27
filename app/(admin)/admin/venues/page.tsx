@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Filter, Download, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Filter, Download, Search, ChevronLeft, ChevronRight, Zap } from "lucide-react";
 import { StatCard } from "@/components/admin/StatCard";
 import { HighlightStatCard } from "@/components/admin/HighlightStatCard";
 import { VenueApprovalRow, PendingVenue } from "@/components/admin/VenueApprovalRow";
@@ -117,7 +117,7 @@ export default function AdminVenuesPage() {
           value="7"
           sub=""
         />
-        <HighlightStatCard label="Avg. Approval Time" value="4.2 Hours" />
+        <HighlightStatCard label="Avg. Approval Time" value="4.2 Hours" icon={Zap} />
       </div>
 
       {/* Table */}
