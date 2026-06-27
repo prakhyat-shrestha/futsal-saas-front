@@ -25,7 +25,7 @@ export function VenueApprovalRow({
 }) {
   return (
     <tr className="border-b border-gray-100 last:border-0">
-      <td className="py-5 pr-4">
+      <td className="py-5 px-6">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0">
             {venue.imageUrl ? (
@@ -61,7 +61,7 @@ export function VenueApprovalRow({
         )}
       </td>
 
-      <td className="py-5">
+      <td className="py-5 px-6">
         <div className="flex items-center gap-2 justify-end">
           <button className="font-dm text-sm font-medium text-gray-700 border border-gray-200 rounded-full px-4 py-2 hover:bg-gray-50 transition-colors">
             Details
