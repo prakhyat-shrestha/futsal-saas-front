@@ -1,9 +1,8 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import { User, UserRole } from "@/types";
-import { useVenueStore } from "@/store/venueStore";
-
-
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { apiRequest } from '@/lib/api';
+import { User, UserRole } from '@/types';
+import { useVenueStore } from '@/store/venueStore';
 
 interface AuthState {
   user: User | null;
@@ -22,7 +21,6 @@ interface AuthState {
   setUser: (user: User) => void;
 }
 
-
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
@@ -39,28 +37,28 @@ export const useAuthStore = create<AuthState>()(
       login: async (email, password) => {
         set({ isLoading: true });
         try {
-          const response = await fetch('/api/v1/auth/login', {
+          const data = await apiRequest<{
+            user: {
+              id: string;
+              name: string;
+              email: string;
+              role: UserRole;
+              createdAt: string;
+              avatarUrl?: string;
+              phone?: string;
+            };
+            accessToken: string;
+            refreshToken: string;
+          }>('/auth/login', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
             body: JSON.stringify({ email, password }),
           });
-
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message ?? 'Invalid credentials');
-          }
-
-          const res = await response.json();
-          const { data } = res;
 
           const userData: User = {
             id: data.user.id,
             name: data.user.name,
             email: data.user.email,
             role: data.user.role,
-           // tenantId: data.user.tenantId ?? undefined,
             createdAt: data.user.createdAt,
             avatarUrl: data.user.avatarUrl ?? undefined,
             phone: data.user.phone ?? undefined,
@@ -83,44 +81,41 @@ export const useAuthStore = create<AuthState>()(
       signup: async (name, email, password, role, phone) => {
         set({ isLoading: true });
         try {
-          const response = await fetch('/api/v1/auth/register', {
+          const data = await apiRequest<{
+            user: {
+              id: string;
+              name: string;
+              email: string;
+              role: UserRole;
+              createdAt: string;
+              avatarUrl?: string;
+              phone?: string;
+            };
+            accessToken: string;
+            refreshToken: string;
+          }>('/auth/register', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
             body: JSON.stringify({ email, password, name, phone, role }),
           });
 
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message ?? 'Signup failed');
-          }
+          const userData: User = {
+            id: data.user.id,
+            name: data.user.name,
+            email: data.user.email,
+            role: data.user.role,
+            createdAt: data.user.createdAt,
+            avatarUrl: data.user.avatarUrl ?? undefined,
+            phone: data.user.phone ?? undefined,
+          };
 
-           const res = await response.json();
-
-          
-
-          const { data } = res;
-           console.log("data",data);
-
-           const userData: User = {
-             id: data.user.id,
-             name: data.user.name,
-             email: data.user.email,
-             role: data.user.role,
-             //tenantId: data.user.tenantId ?? undefined,
-             createdAt: data.user.createdAt,
-             avatarUrl: data.user.avatarUrl ?? undefined,
-             phone: data.user.phone ?? undefined,
-           };
-           set({ 
-             user: userData, 
-             isAuthenticated: true, 
-             isLoading: false,
-             accessToken: data.accessToken,
-             refreshToken: data.refreshToken
-           });
-            return userData;
+          set({
+            user: userData,
+            isAuthenticated: true,
+            isLoading: false,
+            accessToken: data.accessToken,
+            refreshToken: data.refreshToken,
+          });
+          return userData;
         } catch (err) {
           set({ isLoading: false });
           throw err;
@@ -131,14 +126,14 @@ export const useAuthStore = create<AuthState>()(
         set({ user: null, isAuthenticated: false, accessToken: null, refreshToken: null });
         useVenueStore.getState().reset();
       },
-        
+
       setUser: (user) => set({ user, isAuthenticated: true }),
     }),
-    { 
-      name: "futsal-auth",
+    {
+      name: 'futsal-auth',
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
       },
-     }
+    }
   )
 );
