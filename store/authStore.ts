@@ -3,6 +3,8 @@ import { persist } from "zustand/middleware";
 import { User, UserRole } from "@/types";
 import { useVenueStore } from "@/store/venueStore";
 
+
+
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
@@ -10,33 +12,16 @@ interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
 
+  error: string | null;
+  hasHydrated: boolean;
+  setHasHydrated: (value: boolean) => void;
+
   login: (email: string, password: string) => Promise<User>;
   signup: (name: string, email: string, password: string, role: UserRole, phone: string) => Promise<User>;
   logout: () => void;
   setUser: (user: User) => void;
 }
 
-// Mock users for demo
-let MOCK_USERS: Record<string, User> = {
-  "admin@futsalpro.com": {
-    id: "u1",
-    name: "Alex Ramos",
-    email: "admin@futsalpro.com",
-    role: "vendor_admin",
-    tenantId: "t1",
-    createdAt: new Date().toISOString(),
-    phone: undefined,
-  },
-  "player@futsalpro.com": {
-    id: "u2",
-    name: "Jordan Mith",
-    email: "player@futsalpro.com",
-    role: "player",
-    tenantId: "t1",
-    createdAt: new Date().toISOString(),
-    phone: undefined,
-  },
-};
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -46,6 +31,10 @@ export const useAuthStore = create<AuthState>()(
       isLoading: false,
       accessToken: null,
       refreshToken: null,
+
+      error: null,
+      hasHydrated: false,
+      setHasHydrated: (value) => set({ hasHydrated: value }),
 
       login: async (email, password) => {
         set({ isLoading: true });
@@ -145,6 +134,11 @@ export const useAuthStore = create<AuthState>()(
         
       setUser: (user) => set({ user, isAuthenticated: true }),
     }),
-    { name: "futsal-auth" }
+    { 
+      name: "futsal-auth",
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
+     }
   )
 );

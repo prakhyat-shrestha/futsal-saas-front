@@ -124,8 +124,8 @@ export default function DashboardPage() {
         <div className="glass rounded-2xl p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="font-syne font-semibold text-lg text-gray-900">Your Venues</h2>
-            {user?.role === "vendor_admin" && (
-              <Link href="/admin" className="text-green-600 hover:text-green-700 text-sm font-dm transition-colors">
+            {user?.role ===  "VENUE_OWNER" && (
+              <Link href="/dashboard" className="text-green-600 hover:text-green-700 text-sm font-dm transition-colors">
                 Manage →
               </Link>
             )}
