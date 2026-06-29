@@ -1,76 +1,78 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { ChevronRight, UserPlus, Users, ShieldCheck, ChevronDown } from "lucide-react";
-import { UserRow, PlatformUser } from "@/components/admin/UserRow";
-import { Pagination } from "@/components/admin/Pagination";
+import { useState } from 'react';
+import { ChevronRight, UserPlus, Users, ShieldCheck, ChevronDown } from 'lucide-react';
+import { UserRow, PlatformUser } from '@/components/admin/UserRow';
+import { Pagination } from '@/components/admin/Pagination';
 
-type StatusFilter = "All" | "Active" | "Pending" | "Banned";
+import { EmptyState } from '@/components/shared/EmptyState';
+
+type StatusFilter = 'All' | 'Active' | 'Pending' | 'Banned';
 
 const MOCK_USERS: PlatformUser[] = [
   {
-    id: "1",
-    name: "John Doe",
-    email: "john.doe@example.com",
-    role: "Player",
-    joinedLabel: "Oct 12, 2023",
-    status: "Active",
-    avatarColor: "#D1D5DB",
-    initials: "JD",
+    id: '1',
+    name: 'John Doe',
+    email: 'john.doe@example.com',
+    role: 'Player',
+    joinedLabel: 'Oct 12, 2023',
+    status: 'Active',
+    avatarColor: '#D1D5DB',
+    initials: 'JD',
   },
   {
-    id: "2",
-    name: "Sarah Arena",
-    email: "owner@arena-sports.com",
-    role: "Venue Owner",
-    joinedLabel: "Sep 05, 2023",
-    status: "Active",
-    avatarColor: "#34D399",
-    initials: "SA",
+    id: '2',
+    name: 'Sarah Arena',
+    email: 'owner@arena-sports.com',
+    role: 'Venue Owner',
+    joinedLabel: 'Sep 05, 2023',
+    status: 'Active',
+    avatarColor: '#34D399',
+    initials: 'SA',
   },
   {
-    id: "3",
-    name: "Alex Striker",
-    email: "alex.striker@club.io",
-    role: "Player",
-    joinedLabel: "Nov 28, 2023",
-    status: "Pending",
-    avatarUrl: "https://images.unsplash.com/photo-1567013127542-490d757e51fc?w=200&q=80",
-    avatarColor: "#D1D5DB",
-    initials: "AS",
+    id: '3',
+    name: 'Alex Striker',
+    email: 'alex.striker@club.io',
+    role: 'Player',
+    joinedLabel: 'Nov 28, 2023',
+    status: 'Pending',
+    avatarUrl: 'https://images.unsplash.com/photo-1567013127542-490d757e51fc?w=200&q=80',
+    avatarColor: '#D1D5DB',
+    initials: 'AS',
   },
   {
-    id: "4",
-    name: "Mike Keeper",
-    email: "mike.k@blocked.com",
-    role: "Player",
-    joinedLabel: "Aug 14, 2023",
-    status: "Banned",
-    avatarColor: "#FCA5A5",
-    initials: "MK",
+    id: '4',
+    name: 'Mike Keeper',
+    email: 'mike.k@blocked.com',
+    role: 'Player',
+    joinedLabel: 'Aug 14, 2023',
+    status: 'Banned',
+    avatarColor: '#FCA5A5',
+    initials: 'MK',
   },
 ];
 
-const STATUS_TABS: StatusFilter[] = ["All", "Active", "Pending", "Banned"];
+const STATUS_TABS: StatusFilter[] = ['All', 'Active', 'Pending', 'Banned'];
 const PAGE_SIZE = 4;
 const TOTAL_USERS = 1284;
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState(MOCK_USERS);
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("All");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('All');
   const [page, setPage] = useState(1);
   const totalPages = Math.ceil(TOTAL_USERS / PAGE_SIZE);
 
   function handleBan(id: string) {
-    setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, status: "Banned" } : u)));
+    setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, status: 'Banned' } : u)));
   }
 
   function handleLiftBan(id: string) {
-    setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, status: "Active" } : u)));
+    setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, status: 'Active' } : u)));
   }
 
   function handleEdit(id: string) {
-    console.log("Edit user", id);
+    console.log('Edit user', id);
   }
 
   return (
@@ -87,8 +89,7 @@ export default function AdminUsersPage() {
         <div>
           <h1 className="font-syne font-bold text-3xl text-gray-900 mb-2">User Management</h1>
           <p className="font-dm text-sm text-gray-500 max-w-xl">
-            Oversee player accounts and venue owners. Manage credentials, status updates, and
-            platform permissions.
+            Oversee player accounts and venue owners. Manage credentials, status updates, and platform permissions.
           </p>
         </div>
         <button className="inline-flex items-center gap-2 bg-[#0B1F17] hover:bg-[#0B1F17]/90 text-white font-dm text-sm font-semibold px-5 py-3 rounded-full transition-colors shrink-0">
@@ -100,9 +101,7 @@ export default function AdminUsersPage() {
       {/* Filters + stats */}
       <div className="grid lg:grid-cols-4 gap-5 mb-8">
         <div className="bg-white border border-gray-200 rounded-2xl p-5">
-          <p className="font-dm text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">
-            Filter by Status
-          </p>
+          <p className="font-dm text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">Filter by Status</p>
           <div className="flex flex-wrap gap-2">
             {STATUS_TABS.map((status) => (
               <button
@@ -110,8 +109,8 @@ export default function AdminUsersPage() {
                 onClick={() => setStatusFilter(status)}
                 className={`px-4 py-1.5 rounded-full text-sm font-dm font-medium border transition-colors ${
                   statusFilter === status
-                    ? "bg-green-400 text-black border-green-400"
-                    : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
+                    ? 'bg-green-400 text-black border-green-400'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
                 }`}
               >
                 {status}
@@ -121,9 +120,7 @@ export default function AdminUsersPage() {
         </div>
 
         <div className="bg-white border border-gray-200 rounded-2xl p-5">
-          <p className="font-dm text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">
-            Filter by Role
-          </p>
+          <p className="font-dm text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">Filter by Role</p>
           <button className="w-full flex items-center justify-between bg-white border border-gray-200 rounded-xl px-4 py-2.5 font-dm text-sm text-gray-900 hover:border-gray-300 transition-colors">
             All Roles
             <ChevronDown size={14} className="text-gray-400" />
@@ -186,15 +183,13 @@ export default function AdminUsersPage() {
         </div>
 
         {users.length === 0 && (
-          <div className="py-16 text-center">
-            <p className="font-dm text-sm text-gray-400">No users match this filter.</p>
-          </div>
+          <EmptyState icon={Users} title="No users found" description="Try adjusting your filters." />
         )}
 
         {/* Pagination */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
           <p className="font-dm text-sm text-gray-500">
-            Showing {(page - 1) * PAGE_SIZE + 1} to {Math.min(page * PAGE_SIZE, TOTAL_USERS)} of{" "}
+            Showing {(page - 1) * PAGE_SIZE + 1} to {Math.min(page * PAGE_SIZE, TOTAL_USERS)} of{' '}
             {TOTAL_USERS.toLocaleString()} users
           </p>
           <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />

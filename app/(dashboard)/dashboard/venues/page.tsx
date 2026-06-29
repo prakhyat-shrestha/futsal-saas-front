@@ -1,23 +1,28 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { Plus, Search, SlidersHorizontal, ChevronDown,Building2 } from "lucide-react";
-import { useVenueStore } from "@/store/venueStore";
-import { useAuthStore } from "@/store/authStore";
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { Plus, Search, SlidersHorizontal, ChevronDown, Building2 } from 'lucide-react';
+import { useVenueStore } from '@/store/venueStore';
+import { useAuthStore } from '@/store/authStore';
+
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
+import { ErrorBanner } from '@/components/shared/ErrorBanner';
+import { EmptyState } from '@/components/shared/EmptyState';
 
 export default function MyVenuesPage() {
-  const { venues,fetchVenues,getVenuesByTenant  } = useVenueStore();
-  const [search, setSearch] = useState("");
-    const { user } = useAuthStore();
+  const { venues, fetchVenues, getVenuesByTenant, isLoading, error } = useVenueStore();
+  const [search, setSearch] = useState('');
+  const { user } = useAuthStore();
 
-    useEffect(() => {
+  useEffect(() => {
     fetchVenues();
   }, [fetchVenues]);
 
   const venuesByOwner = user ? getVenuesByTenant(user.id) : [];
-
-  console.log("venuews by owner",venuesByOwner);
+  const filteredVenues = venuesByOwner.filter((v) =>
+    v.name.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div className="p-8">
@@ -57,28 +62,54 @@ export default function MyVenuesPage() {
         </button>
       </div>
 
+      {/* Loading state */}
+      {isLoading && <LoadingSpinner label="Loading your venues..." />}
+
+      {/* Error state */}
+      {!isLoading && error && (
+        <ErrorBanner message={error} onRetry={() => fetchVenues()} />
+      )}
+
+      {/* Empty state */}
+      {!isLoading && !error && venuesByOwner.length === 0 && (
+        <EmptyState
+          icon={Building2}
+          title="No venues yet"
+          description="Create your first venue to start accepting bookings."
+          action={
+            <Link
+              href="/dashboard/venues/new"
+              className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-400 text-black font-syne font-semibold px-5 py-2.5 rounded-full text-sm transition-colors"
+            >
+              <Plus size={16} />
+              Add Venue
+            </Link>
+          }
+        />
+      )}
+
       {/* Venue grid */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {venuesByOwner
-          .filter((v) => v.name.toLowerCase().includes(search.toLowerCase()))
-          .map((venue) => (
+      {!isLoading && !error && venuesByOwner.length > 0 && (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filteredVenues.map((venue) => (
             <VenueCard key={venue.id} venue={venue} />
           ))}
 
-        {/* Add another venue */}
-        <Link
-          href="/dashboard/venues/new"
-          className="border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center text-center p-8 hover:border-green-500/40 hover:bg-green-500/5 transition-colors min-h-[260px]"
-        >
-          <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-            <Plus size={20} className="text-gray-500" />
-          </div>
-          <p className="font-syne font-semibold text-sm text-gray-900 mb-1.5">Add another venue</p>
-          <p className="font-dm text-xs text-gray-400 max-w-[200px]">
-            Grow your sports empire. List a new pitch to start taking bookings instantly.
-          </p>
-        </Link>
-      </div>
+          {/* Add another venue */}
+          <Link
+            href="/dashboard/venues/new"
+            className="border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center text-center p-8 hover:border-green-500/40 hover:bg-green-500/5 transition-colors min-h-[260px]"
+          >
+            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+              <Plus size={20} className="text-gray-500" />
+            </div>
+            <p className="font-syne font-semibold text-sm text-gray-900 mb-1.5">Add another venue</p>
+            <p className="font-dm text-xs text-gray-400 max-w-[200px]">
+              Grow your sports empire. List a new pitch to start taking bookings instantly.
+            </p>
+          </Link>
+        </div>
+      )}
     </div>
   );
 }
@@ -93,7 +124,7 @@ function FilterDropdown({ label }: { label: string }) {
 }
 
 function VenueCard({ venue }: { venue: any }) {
-  const isActive = venue.status !== "maintenance";
+  const isActive = venue.status !== 'maintenance';
 
   return (
     <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
@@ -103,7 +134,7 @@ function VenueCard({ venue }: { venue: any }) {
           <img
             src={venue.imageUrl}
             alt={venue.name}
-            className={`w-full h-full object-cover ${!isActive ? "grayscale" : ""}`}
+            className={`w-full h-full object-cover ${!isActive ? 'grayscale' : ''}`}
           />
         ) : (
           <div className="w-full h-full bg-gray-100 flex items-center justify-center">
@@ -111,14 +142,13 @@ function VenueCard({ venue }: { venue: any }) {
           </div>
         )}
 
-
         <span
           className={`absolute top-3 left-3 inline-flex items-center gap-1.5 text-xs font-dm font-medium px-2.5 py-1 rounded-full ${
-            isActive ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-600"
+            isActive ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'
           }`}
         >
-          <span className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-green-500" : "bg-gray-400"}`} />
-          {isActive ? "Active" : "Maintenance"}
+          <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-green-500' : 'bg-gray-400'}`} />
+          {isActive ? 'Active' : 'Maintenance'}
         </span>
         <span className="absolute top-3 right-3 bg-white text-gray-900 text-xs font-dm font-semibold px-2.5 py-1 rounded-full">
           ${venue.pricePerHour}/hr
@@ -128,26 +158,18 @@ function VenueCard({ venue }: { venue: any }) {
       {/* Body */}
       <div className="p-5">
         <div className="flex items-start justify-between mb-3">
-          <h3 className="font-syne font-semibold text-base text-gray-900 truncate pr-2">
-            {venue.name}
-          </h3>
+          <h3 className="font-syne font-semibold text-base text-gray-900 truncate pr-2">{venue.name}</h3>
           <span className="font-dm text-xs text-gray-400 shrink-0">{venue.pitchType}</span>
         </div>
 
         <div className="flex items-center gap-6 mb-4">
           <div>
-            <p className="font-dm text-[11px] uppercase tracking-wide text-gray-400 mb-0.5">
-              Bookings Today
-            </p>
+            <p className="font-dm text-[11px] uppercase tracking-wide text-gray-400 mb-0.5">Bookings Today</p>
             <p className="font-syne font-bold text-sm text-gray-900">{venue.bookingsToday ?? 0}</p>
           </div>
           <div>
-            <p className="font-dm text-[11px] uppercase tracking-wide text-gray-400 mb-0.5">
-              Weekly Revenue
-            </p>
-            <p className="font-syne font-bold text-sm text-green-600">
-              ${venue.weeklyRevenue ?? 0}
-            </p>
+            <p className="font-dm text-[11px] uppercase tracking-wide text-gray-400 mb-0.5">Weekly Revenue</p>
+            <p className="font-syne font-bold text-sm text-green-600">${venue.weeklyRevenue ?? 0}</p>
           </div>
         </div>
 
@@ -161,9 +183,7 @@ function VenueCard({ venue }: { venue: any }) {
           <Link
             href={`/dashboard/venues/${venue.id}/schedule`}
             className={`flex-1 text-center font-dm text-sm font-medium rounded-xl py-2 transition-colors ${
-              isActive
-                ? "bg-gray-900 text-white hover:bg-gray-800"
-                : "bg-gray-100 text-gray-400 cursor-not-allowed"
+              isActive ? 'bg-gray-900 text-white hover:bg-gray-800' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
             }`}
           >
             View Schedule

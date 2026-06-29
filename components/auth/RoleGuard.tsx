@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { UserRole } from "@/types";
 
+import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
+
 const ROLE_HOME: Record<UserRole, string> = {
   VENUE_OWNER: "/dashboard",
   PLAYER: "/play",
@@ -39,11 +41,7 @@ export function RoleGuard({
   }, [hasHydrated, user, allow, router]);
 
   if (!hasHydrated || !authorized) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="w-6 h-6 border-2 border-gray-200 border-t-green-500 rounded-full animate-spin" />
-      </div>
-    );
+    return <LoadingSpinner fullScreen />;
   }
 
   return <>{children}</>;

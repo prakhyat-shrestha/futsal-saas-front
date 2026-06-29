@@ -71,7 +71,7 @@ const MOCK_COURTS: Court[] = [
 export const useVenueStore = create<VenueState>()(
   persist(
     (set, get) => ({
-      venues: MOCK_VENUES,
+      venues: [],
       courts: MOCK_COURTS,
       selectedVenueId: 'v1',
 

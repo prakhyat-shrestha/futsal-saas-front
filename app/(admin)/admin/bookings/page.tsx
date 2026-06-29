@@ -1,66 +1,59 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import {
-  ChevronRight,
-  Download,
-  Calendar,
-  Gamepad2,
-  Headset,
-  AlertTriangle,
-  ChevronDown,
-  Filter,
-} from "lucide-react";
-import { StatCard } from "@/components/admin/StatCard";
-import { HighlightStatCard } from "@/components/admin/HighlightStatCard";
-import { StatusFilterTabs, BookingStatusFilter } from "@/components/admin/StatusFilterTabs";
-import { BookingRow, Booking } from "@/components/admin/BookingRow";
-import { Pagination } from "@/components/admin/Pagination";
+import { useState } from 'react';
+import { ChevronRight, Download, Calendar, Gamepad2, Headset, AlertTriangle, ChevronDown, Filter } from 'lucide-react';
+import { StatCard } from '@/components/admin/StatCard';
+import { HighlightStatCard } from '@/components/admin/HighlightStatCard';
+import { StatusFilterTabs, BookingStatusFilter } from '@/components/admin/StatusFilterTabs';
+import { BookingRow, Booking } from '@/components/admin/BookingRow';
+import { Pagination } from '@/components/admin/Pagination';
+
+import { EmptyState } from '@/components/shared/EmptyState';
 
 const MOCK_BOOKINGS: Booking[] = [
   {
-    id: "1",
-    bookingRef: "#PF-12845",
-    venueName: "The Apex Hub",
-    venueImageUrl: "https://images.unsplash.com/photo-1577223625816-7546f13df25d?w=200&q=80",
-    playerName: "Alex Rivera",
-    dateLabel: "Oct 24, 2023",
-    timeRange: "19:00 - 20:00",
+    id: '1',
+    bookingRef: '#PF-12845',
+    venueName: 'The Apex Hub',
+    venueImageUrl: 'https://images.unsplash.com/photo-1577223625816-7546f13df25d?w=200&q=80',
+    playerName: 'Alex Rivera',
+    dateLabel: 'Oct 24, 2023',
+    timeRange: '19:00 - 20:00',
     amount: 65.0,
-    status: "Confirmed",
+    status: 'Confirmed',
   },
   {
-    id: "2",
-    bookingRef: "#PF-12842",
-    venueName: "Powerplay Central",
-    venueImageUrl: "https://images.unsplash.com/photo-1551958219-acbc608c6377?w=200&q=80",
-    playerName: "Sarah Jenkins",
-    dateLabel: "Oct 24, 2023",
-    timeRange: "20:30 - 22:00",
+    id: '2',
+    bookingRef: '#PF-12842',
+    venueName: 'Powerplay Central',
+    venueImageUrl: 'https://images.unsplash.com/photo-1551958219-acbc608c6377?w=200&q=80',
+    playerName: 'Sarah Jenkins',
+    dateLabel: 'Oct 24, 2023',
+    timeRange: '20:30 - 22:00',
     amount: 120.0,
-    status: "Disputed",
+    status: 'Disputed',
   },
   {
-    id: "3",
-    bookingRef: "#PF-12840",
-    venueName: "The Goal Box",
-    venueImageUrl: "https://images.unsplash.com/photo-1459865264687-595d652de67e?w=200&q=80",
-    playerName: "Marco Silva",
-    dateLabel: "Oct 24, 2023",
-    timeRange: "18:00 - 19:00",
+    id: '3',
+    bookingRef: '#PF-12840',
+    venueName: 'The Goal Box',
+    venueImageUrl: 'https://images.unsplash.com/photo-1459865264687-595d652de67e?w=200&q=80',
+    playerName: 'Marco Silva',
+    dateLabel: 'Oct 24, 2023',
+    timeRange: '18:00 - 19:00',
     amount: 45.0,
-    status: "Pending",
+    status: 'Pending',
   },
   {
-    id: "4",
-    bookingRef: "#PF-12838",
-    venueName: "Urban Turf Arena",
-    venueImageUrl: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=200&q=80",
-    playerName: "Alex Striker",
-    dateLabel: "Oct 23, 2023",
-    timeRange: "21:00 - 22:30",
+    id: '4',
+    bookingRef: '#PF-12838',
+    venueName: 'Urban Turf Arena',
+    venueImageUrl: 'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=200&q=80',
+    playerName: 'Alex Striker',
+    dateLabel: 'Oct 23, 2023',
+    timeRange: '21:00 - 22:30',
     amount: 85.0,
-    status: "Cancelled",
+    status: 'Cancelled',
   },
 ];
 
@@ -68,16 +61,16 @@ const PAGE_SIZE = 4;
 const TOTAL_BOOKINGS_FILTERED = 18;
 
 export default function AdminBookingsPage() {
-  const [statusFilter, setStatusFilter] = useState<BookingStatusFilter>("All");
+  const [statusFilter, setStatusFilter] = useState<BookingStatusFilter>('All');
   const [page, setPage] = useState(1);
   const totalPages = Math.ceil(TOTAL_BOOKINGS_FILTERED / PAGE_SIZE);
 
   function handleContact(id: string) {
-    console.log("Contact booking", id);
+    console.log('Contact booking', id);
   }
 
   function handleRefund(id: string) {
-    console.log("Refund booking", id);
+    console.log('Refund booking', id);
   }
 
   return (
@@ -193,15 +186,13 @@ export default function AdminBookingsPage() {
         </div>
 
         {MOCK_BOOKINGS.length === 0 && (
-          <div className="py-16 text-center">
-            <p className="font-dm text-sm text-gray-400">No bookings match this filter.</p>
-          </div>
+          <EmptyState icon={Calendar} title="No bookings found" description="Try adjusting your filters." />
         )}
 
         {/* Pagination */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
           <p className="font-dm text-sm text-gray-500">
-            Showing {(page - 1) * PAGE_SIZE + 1} to {Math.min(page * PAGE_SIZE, TOTAL_BOOKINGS_FILTERED)} of{" "}
+            Showing {(page - 1) * PAGE_SIZE + 1} to {Math.min(page * PAGE_SIZE, TOTAL_BOOKINGS_FILTERED)} of{' '}
             {TOTAL_BOOKINGS_FILTERED} bookings
           </p>
           <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />

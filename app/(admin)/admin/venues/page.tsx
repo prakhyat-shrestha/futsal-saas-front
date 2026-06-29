@@ -1,53 +1,55 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Filter, Download, Search, ChevronLeft, ChevronRight, Zap } from "lucide-react";
-import { StatCard } from "@/components/admin/StatCard";
-import { HighlightStatCard } from "@/components/admin/HighlightStatCard";
-import { VenueApprovalRow, PendingVenue } from "@/components/admin/VenueApprovalRow";
-import { Clock, CheckCircle2, XCircle } from "lucide-react";
+import { useState } from 'react';
+import { Filter, Download, Search, ChevronLeft, ChevronRight, Zap } from 'lucide-react';
+import { StatCard } from '@/components/admin/StatCard';
+import { HighlightStatCard } from '@/components/admin/HighlightStatCard';
+import { VenueApprovalRow, PendingVenue } from '@/components/admin/VenueApprovalRow';
+import { Clock, CheckCircle2, XCircle } from 'lucide-react';
+
+import { EmptyState } from '@/components/shared/EmptyState';
 
 const MOCK_VENUES: PendingVenue[] = [
   {
-    id: "1",
-    name: "Urban Turf Arena",
-    tags: "5-a-side · Premium Turf",
-    ownerName: "Marco Silva",
-    ownerEmail: "marco.silva@example.com",
-    location: "London, UK",
-    submittedLabel: "22 Oct 2023",
+    id: '1',
+    name: 'Urban Turf Arena',
+    tags: '5-a-side · Premium Turf',
+    ownerName: 'Marco Silva',
+    ownerEmail: 'marco.silva@example.com',
+    location: 'London, UK',
+    submittedLabel: '22 Oct 2023',
     isNew: true,
-    imageUrl: "https://images.unsplash.com/photo-1577223625816-7546f13df25d?w=200&q=80",
+    imageUrl: 'https://images.unsplash.com/photo-1577223625816-7546f13df25d?w=200&q=80',
   },
   {
-    id: "2",
-    name: "Blue Pulse Futsal",
-    tags: "Futsal · Indoor Hall",
-    ownerName: "Elena Rodriguez",
-    ownerEmail: "e.rodriguez@citypulse.es",
-    location: "Madrid, ES",
-    submittedLabel: "21 Oct 2023",
-    imageUrl: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=200&q=80",
+    id: '2',
+    name: 'Blue Pulse Futsal',
+    tags: 'Futsal · Indoor Hall',
+    ownerName: 'Elena Rodriguez',
+    ownerEmail: 'e.rodriguez@citypulse.es',
+    location: 'Madrid, ES',
+    submittedLabel: '21 Oct 2023',
+    imageUrl: 'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=200&q=80',
   },
   {
-    id: "3",
-    name: "Goal Zone Central",
-    tags: "7-a-side · Floodlit",
-    ownerName: "David Chen",
-    ownerEmail: "chen@goalzone.net",
-    location: "Berlin, DE",
-    submittedLabel: "20 Oct 2023",
-    imageUrl: "https://images.unsplash.com/photo-1551958219-acbc608c6377?w=200&q=80",
+    id: '3',
+    name: 'Goal Zone Central',
+    tags: '7-a-side · Floodlit',
+    ownerName: 'David Chen',
+    ownerEmail: 'chen@goalzone.net',
+    location: 'Berlin, DE',
+    submittedLabel: '20 Oct 2023',
+    imageUrl: 'https://images.unsplash.com/photo-1551958219-acbc608c6377?w=200&q=80',
   },
   {
-    id: "4",
-    name: "Pitch Perfect Elite",
-    tags: "Multi-sport · Air Conditioned",
-    ownerName: "Sarah Jenkins",
-    ownerEmail: "s.jenkins@elitepitches.com",
-    location: "New York, US",
-    submittedLabel: "19 Oct 2023",
-    imageUrl: "https://images.unsplash.com/photo-1459865264687-595d652de67e?w=200&q=80",
+    id: '4',
+    name: 'Pitch Perfect Elite',
+    tags: 'Multi-sport · Air Conditioned',
+    ownerName: 'Sarah Jenkins',
+    ownerEmail: 's.jenkins@elitepitches.com',
+    location: 'New York, US',
+    submittedLabel: '19 Oct 2023',
+    imageUrl: 'https://images.unsplash.com/photo-1459865264687-595d652de67e?w=200&q=80',
   },
 ];
 
@@ -145,27 +147,20 @@ export default function AdminVenuesPage() {
             </thead>
             <tbody className="px-6">
               {venues.map((venue) => (
-                <VenueApprovalRow
-                  key={venue.id}
-                  venue={venue}
-                  onApprove={handleApprove}
-                  onReject={handleReject}
-                />
+                <VenueApprovalRow key={venue.id} venue={venue} onApprove={handleApprove} onReject={handleReject} />
               ))}
             </tbody>
           </table>
         </div>
 
         {venues.length === 0 && (
-          <div className="py-16 text-center">
-            <p className="font-dm text-sm text-gray-400">No pending submissions on this page.</p>
-          </div>
+          <EmptyState icon={CheckCircle2} title="All caught up" description="No pending submissions on this page." />
         )}
 
         {/* Pagination */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
           <p className="font-dm text-sm text-gray-500">
-            Showing {(page - 1) * PAGE_SIZE + 1} to {Math.min(page * PAGE_SIZE, TOTAL_SUBMISSIONS)} of{" "}
+            Showing {(page - 1) * PAGE_SIZE + 1} to {Math.min(page * PAGE_SIZE, TOTAL_SUBMISSIONS)} of{' '}
             {TOTAL_SUBMISSIONS} submissions
           </p>
 
@@ -183,9 +178,7 @@ export default function AdminVenuesPage() {
                 key={p}
                 onClick={() => setPage(p)}
                 className={`w-9 h-9 rounded-full font-dm text-sm font-medium transition-colors ${
-                  p === page
-                    ? "bg-[#0B1F17] text-white"
-                    : "text-gray-600 hover:bg-gray-50"
+                  p === page ? 'bg-[#0B1F17] text-white' : 'text-gray-600 hover:bg-gray-50'
                 }`}
               >
                 {p}
