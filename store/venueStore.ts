@@ -1,24 +1,25 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import { Venue, Court, CourtSurface } from "@/types";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { apiRequest } from '@/lib/api';
+import { Venue, Court, CourtSurface } from '@/types';
 
-import { useAuthStore } from "@/store/authStore";
+import { useAuthStore } from '@/store/authStore';
 
 interface VenueState {
   venues: Venue[];
   courts: Court[];
   isLoading: boolean;
   error: string | null;
- 
+
   selectedVenueId: string | null;
 
   setSelectedVenue: (id: string) => void;
   fetchVenues: () => Promise<void>;
-  addVenue: (venue: Omit<Venue, "id" | "createdAt">) => void;
+  addVenue: (venue: Omit<Venue, 'id' | 'createdAt'>) => void;
   updateVenue: (id: string, data: Partial<Venue>) => void;
   deleteVenue: (id: string) => void;
 
-  addCourt: (court: Omit<Court, "id">) => void;
+  addCourt: (court: Omit<Court, 'id'>) => void;
   updateCourt: (id: string, data: Partial<Court>) => void;
   deleteCourt: (id: string) => void;
 
@@ -30,33 +31,41 @@ interface VenueState {
 
 const MOCK_VENUES: Venue[] = [
   {
-    id: "v1",
-    ownerId: "t1",
-    name: "Arena North",
-    address: "123 Sports Blvd",
-    city: "Kathmandu",
-    openTime: "06:00",
-    closeTime: "23:00",
-    imageUrl: "https://images.unsplash.com/photo-1556056504-5c7696c4c28d?w=800&q=80",
+    id: 'v1',
+    ownerId: 't1',
+    name: 'Arena North',
+    address: '123 Sports Blvd',
+    city: 'Kathmandu',
+    openTime: '06:00',
+    closeTime: '23:00',
+    imageUrl: 'https://images.unsplash.com/photo-1556056504-5c7696c4c28d?w=800&q=80',
     createdAt: new Date().toISOString(),
   },
   {
-    id: "v2",
-    ownerId: "t1",
-    name: "Downtown Court",
-    address: "45 Central Ave",
-    city: "Patan",
-    openTime: "07:00",
-    closeTime: "22:00",
-    imageUrl: "https://images.unsplash.com/photo-1577223625816-7546f13df25d?w=800&q=80",
+    id: 'v2',
+    ownerId: 't1',
+    name: 'Downtown Court',
+    address: '45 Central Ave',
+    city: 'Patan',
+    openTime: '07:00',
+    closeTime: '22:00',
+    imageUrl: 'https://images.unsplash.com/photo-1577223625816-7546f13df25d?w=800&q=80',
     createdAt: new Date().toISOString(),
   },
 ];
 
 const MOCK_COURTS: Court[] = [
-  { id: "c1", venueId: "v1", name: "Court A", surface: "artificial_grass", capacity: 5, pricePerHour: 1200, isActive: true },
-  { id: "c2", venueId: "v1", name: "Court B", surface: "hardwood", capacity: 5, pricePerHour: 1500, isActive: true },
-  { id: "c3", venueId: "v2", name: "Main Court", surface: "rubber", capacity: 6, pricePerHour: 1000, isActive: true },
+  {
+    id: 'c1',
+    venueId: 'v1',
+    name: 'Court A',
+    surface: 'artificial_grass',
+    capacity: 5,
+    pricePerHour: 1200,
+    isActive: true,
+  },
+  { id: 'c2', venueId: 'v1', name: 'Court B', surface: 'hardwood', capacity: 5, pricePerHour: 1500, isActive: true },
+  { id: 'c3', venueId: 'v2', name: 'Main Court', surface: 'rubber', capacity: 6, pricePerHour: 1000, isActive: true },
 ];
 
 export const useVenueStore = create<VenueState>()(
@@ -64,120 +73,53 @@ export const useVenueStore = create<VenueState>()(
     (set, get) => ({
       venues: MOCK_VENUES,
       courts: MOCK_COURTS,
-      selectedVenueId: "v1",
+      selectedVenueId: 'v1',
 
-      isLoading:false,
-      error:null,
+      isLoading: false,
+      error: null,
       setSelectedVenue: (id) => set({ selectedVenueId: id }),
 
       fetchVenues: async () => {
         set({ isLoading: true, error: null });
         try {
-          const token = useAuthStore.getState().accessToken;
-
-          const res = await fetch("/api/v1/venues", {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-
-          const json = await res.json();
-
-          if (!res.ok || !json.success) {
-            throw new Error(json?.message ?? "Failed to load venues.");
-          }
-
-          const venues: Venue[] = json.data;
+          const venues = await apiRequest<Venue[]>('/venues/mine', { method: 'GET' });
           set({
             venues,
             selectedVenueId: venues[0]?.id ?? null,
             isLoading: false,
           });
         } catch (err: any) {
-          set({ isLoading: false, error: err.message ?? "Something went wrong." });
+          set({ isLoading: false, error: err.message ?? 'Something went wrong.' });
         }
       },
 
-      // addVenue: (data) => {
-      //   const venue: Venue = { ...data, id: `v_${Date.now()}`, createdAt: new Date().toISOString() };
-      //   set((s) => ({ venues: [...s.venues, venue] }));
-      // },
+      addVenue: async (data) => {
+        set({ isLoading: true, error: null });
+        try {
+          const venue = await apiRequest<Venue>("/venues", {
+            method: "POST",
+            body: JSON.stringify(data),
+          });
+          set((s) => ({ venues: [...s.venues, venue], isLoading: false }));
+          return venue;
+        } catch (err: any) {
+          set({ isLoading: false, error: err.message ?? "Something went wrong." });
+          throw err;
+        }
+      },
 
-      // addVenue: async (data) => {
-      //     set({ isLoading: true, error: null });
-      //     try {
-      //       const token = useAuthStore.getState().accessToken; // adjust to however you store the JWT
+      updateVenue: (id, data) => set((s) => ({ venues: s.venues.map((v) => (v.id === id ? { ...v, ...data } : v)) })),
 
-
-      //       const res = await fetch('/api/v1/venues', {
-      //         method: "POST",
-      //         headers: {
-      //           "Content-Type": "application/json",
-      //           Authorization: `Bearer ${token}`,
-      //         },
-      //         body: JSON.stringify(data),
-      //       });
-
-      //       if (!res.ok) {
-      //         const errBody = await res.json().catch(() => null);
-      //         throw new Error(errBody?.message ?? "Failed to create venue.");
-      //       }
-
-      //       const venue: Venue = await res.json();
-      //       set((s) => ({ venues: [...s.venues, venue], isLoading: false }));
-      //       return venue;
-      //     } catch (err: any) {
-      //       set({ isLoading: false, error: err.message ?? "Something went wrong." });
-      //       throw err;
-      //     }
-      //   },
-
-        addVenue: async (data) => {
-          set({ isLoading: true, error: null });
-          try {
-            const token = useAuthStore.getState().accessToken;
-
-            const res = await fetch('/api/v1/venues', {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify(data),
-            });
-
-            const json = await res.json();
-
-            if (!res.ok || !json.success) {
-              throw new Error(json?.message ?? "Failed to create venue.");
-            }
-
-            const venue: Venue = json.data;
-            set((s) => ({ venues: [...s.venues, venue], isLoading: false }));
-            return venue;
-          } catch (err: any) {
-            set({ isLoading: false, error: err.message ?? "Something went wrong." });
-            throw err;
-          }
-        },
-
-      updateVenue: (id, data) =>
-        set((s) => ({ venues: s.venues.map((v) => (v.id === id ? { ...v, ...data } : v)) })),
-
-      deleteVenue: (id) =>
-        set((s) => ({ venues: s.venues.filter((v) => v.id !== id) })),
+      deleteVenue: (id) => set((s) => ({ venues: s.venues.filter((v) => v.id !== id) })),
 
       addCourt: (data) => {
         const court: Court = { ...data, id: `c_${Date.now()}` };
         set((s) => ({ courts: [...s.courts, court] }));
       },
 
-      updateCourt: (id, data) =>
-        set((s) => ({ courts: s.courts.map((c) => (c.id === id ? { ...c, ...data } : c)) })),
+      updateCourt: (id, data) => set((s) => ({ courts: s.courts.map((c) => (c.id === id ? { ...c, ...data } : c)) })),
 
-      deleteCourt: (id) =>
-        set((s) => ({ courts: s.courts.filter((c) => c.id !== id) })),
+      deleteCourt: (id) => set((s) => ({ courts: s.courts.filter((c) => c.id !== id) })),
 
       getVenuesByTenant: (tenantId) => get().venues.filter((v) => v.ownerId === tenantId),
       getCourtsByVenue: (venueId) => get().courts.filter((c) => c.venueId === venueId),
@@ -189,9 +131,7 @@ export const useVenueStore = create<VenueState>()(
           error: null,
         }),
     }),
-    
-    { name: "futsal-venues" ,
-      partialize: (state) => ({ courts: state.courts }),
-    }
+
+    { name: 'futsal-venues', partialize: (state) => ({ courts: state.courts }) }
   )
 );
