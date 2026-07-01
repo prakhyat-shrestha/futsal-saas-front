@@ -20,9 +20,7 @@ export default function MyVenuesPage() {
   }, [fetchVenues]);
 
   const venuesByOwner = user ? getVenuesByTenant(user.id) : [];
-  const filteredVenues = venuesByOwner.filter((v) =>
-    v.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredVenues = venuesByOwner.filter((v) => v.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <div className="p-8">
@@ -66,9 +64,7 @@ export default function MyVenuesPage() {
       {isLoading && <LoadingSpinner label="Loading your venues..." />}
 
       {/* Error state */}
-      {!isLoading && error && (
-        <ErrorBanner message={error} onRetry={() => fetchVenues()} />
-      )}
+      {!isLoading && error && <ErrorBanner message={error} onRetry={() => fetchVenues()} />}
 
       {/* Empty state */}
       {!isLoading && !error && venuesByOwner.length === 0 && (
@@ -181,12 +177,14 @@ function VenueCard({ venue }: { venue: any }) {
             Edit Details
           </Link>
           <Link
-            href={`/dashboard/venues/${venue.id}/schedule`}
+            href={`/dashboard/venues/${venue.id}`}
             className={`flex-1 text-center font-dm text-sm font-medium rounded-xl py-2 transition-colors ${
-              isActive ? 'bg-gray-900 text-white hover:bg-gray-800' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              isActive
+                ? 'bg-gray-900 text-white hover:bg-gray-800'
+                : 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none'
             }`}
           >
-            View Schedule
+            View Details
           </Link>
         </div>
       </div>

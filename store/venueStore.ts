@@ -16,8 +16,8 @@ interface VenueState {
   setSelectedVenue: (id: string) => void;
   fetchVenues: () => Promise<void>;
   addVenue: (venue: Omit<Venue, 'id' | 'createdAt'>) => void;
-  updateVenue: (id: string, data: Partial<Venue>) => void;
-  deleteVenue: (id: string) => void;
+  updateVenue: (id: string, data: Partial<Venue>) => Promise<Venue>;
+  deleteVenue: (id: string) => Promise<void>;
 
   addCourt: (court: Omit<Court, 'id'>) => void;
   updateCourt: (id: string, data: Partial<Court>) => void;
@@ -96,21 +96,49 @@ export const useVenueStore = create<VenueState>()(
       addVenue: async (data) => {
         set({ isLoading: true, error: null });
         try {
-          const venue = await apiRequest<Venue>("/venues", {
-            method: "POST",
+          const venue = await apiRequest<Venue>('/venues', {
+            method: 'POST',
             body: JSON.stringify(data),
           });
           set((s) => ({ venues: [...s.venues, venue], isLoading: false }));
           return venue;
         } catch (err: any) {
-          set({ isLoading: false, error: err.message ?? "Something went wrong." });
+          set({ isLoading: false, error: err.message ?? 'Something went wrong.' });
           throw err;
         }
       },
 
-      updateVenue: (id, data) => set((s) => ({ venues: s.venues.map((v) => (v.id === id ? { ...v, ...data } : v)) })),
+      updateVenue: async (id, data) => {
+        set({ isLoading: true, error: null });
+        try {
+          const venue = await apiRequest<Venue>(`/venues/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(data),
+          });
+          set((s) => ({
+            venues: s.venues.map((v) => (v.id === id ? venue : v)),
+            isLoading: false,
+          }));
+          return venue;
+        } catch (err: any) {
+          set({ isLoading: false, error: err.message ?? 'Failed to update venue.' });
+          throw err;
+        }
+      },
 
-      deleteVenue: (id) => set((s) => ({ venues: s.venues.filter((v) => v.id !== id) })),
+      deleteVenue: async (id) => {
+        set({ isLoading: true, error: null });
+        try {
+          await apiRequest<void>(`/venues/${id}`, { method: 'DELETE' });
+          set((s) => ({
+            venues: s.venues.filter((v) => v.id !== id),
+            isLoading: false,
+          }));
+        } catch (err: any) {
+          set({ isLoading: false, error: err.message ?? 'Failed to delete venue.' });
+          throw err;
+        }
+      },
 
       addCourt: (data) => {
         const court: Court = { ...data, id: `c_${Date.now()}` };
