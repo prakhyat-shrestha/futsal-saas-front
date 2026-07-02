@@ -15,7 +15,7 @@ import { Calendar } from 'lucide-react';
 export default function DashboardPage() {
   const { user, logout } = useAuthStore();
   const { bookings } = useBookingStore();
-  const { venues, courts } = useVenueStore();
+  const { venues, pitches } = useVenueStore();
   const router = useRouter();
 
   const handleLogout = () => {
@@ -56,7 +56,7 @@ export default function DashboardPage() {
     },
     {
       label: 'Active Courts',
-      value: courts.filter((c) => c.isActive).length,
+      value: pitches.filter((c) => c.isActive).length,
       icon: '🏟️',
       sub: `${tenantVenues.length} venues`,
       color: 'purple',
@@ -120,7 +120,7 @@ export default function DashboardPage() {
               <EmptyState icon={Calendar} title="No bookings yet" />
             ) : (
               recentBookings.map((booking) => {
-                const court = courts.find((c) => c.id === booking.courtId);
+                const court = pitches.find((c) => c.id === booking.courtId);
                 const venue = tenantVenues.find((v) => v.id === booking.venueId);
                 return (
                   <div
@@ -165,7 +165,7 @@ export default function DashboardPage() {
           </div>
           <div className="space-y-3">
             {tenantVenues.map((venue) => {
-              const venueCourts = courts.filter((c) => c.venueId === venue.id);
+              const venueCourts = pitches.filter((c) => c.venueId === venue.id);
               const venueBookings = todayBookings.filter((b) => b.venueId === venue.id);
               return (
                 <div key={venue.id} className="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">

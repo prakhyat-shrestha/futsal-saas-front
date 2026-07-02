@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { use, useEffect, useState } from "react";
-import Link from "next/link";
-import { notFound, useRouter } from "next/navigation";
+import { use, useEffect, useState } from 'react';
+import Link from 'next/link';
+import { notFound, useRouter } from 'next/navigation';
 import {
   ArrowLeft,
   MapPin,
@@ -18,27 +18,45 @@ import {
   Clock,
   Building2,
   MoreHorizontal,
-} from "lucide-react";
-import { useVenueStore } from "@/store/venueStore";
-import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
-import { EmptyState } from "@/components/shared/EmptyState";
+} from 'lucide-react';
+import { useVenueStore } from '@/store/venueStore';
+import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
+import { EmptyState } from '@/components/shared/EmptyState';
+
+import { PitchModal } from '@/components/dashboard/PitchModal';
+import { Pitch } from '@/types';
+import { CreatePitchPayload } from '@/store/venueStore';
 
 export default function VenueDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const { venues, courts, fetchVenues, isLoading } = useVenueStore();
+  const { venues, pitches, fetchVenues, fetchPitches, addPitch, updatePitch, isLoading } = useVenueStore();
   const [hasChecked, setHasChecked] = useState(false);
 
+  // modal state
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingPitch, setEditingPitch] = useState<Pitch | undefined>(undefined);
+
+  // useEffect(() => {
+  //   if (venues.length === 0) {
+  //     fetchVenues().then(() => setHasChecked(true));
+  //   } else {
+  //     setHasChecked(true);
+  //   }
+  // }, [venues.length, fetchVenues]);
+
   useEffect(() => {
-    if (venues.length === 0) {
-      fetchVenues().then(() => setHasChecked(true));
-    } else {
+    const load = async () => {
+      if (venues.length === 0) await fetchVenues();
+      await fetchPitches(id);
       setHasChecked(true);
-    }
-  }, [venues.length, fetchVenues]);
+    };
+    load();
+  }, [id]);
 
   const venue = venues.find((v) => v.id === id);
-  const venueCourts = courts.filter((c) => c.venueId === id);
+  //const venueCourts = courts.filter((c) => c.venueId === id);
+  const venuePitches = pitches.filter((p) => p.venueId === id);
 
   if (!hasChecked || isLoading) {
     return <LoadingSpinner fullScreen label="Loading venue..." />;
@@ -46,38 +64,56 @@ export default function VenueDetailPage({ params }: { params: Promise<{ id: stri
 
   if (!venue) notFound();
 
+  async function handlePitchSubmit(venueId: string, data: CreatePitchPayload, pitchId?: string) {
+    if (pitchId) {
+      await updatePitch(pitchId, data);
+    } else {
+      await addPitch(venueId, data);
+    }
+  }
+
+  function openAdd() {
+    setEditingPitch(undefined);
+    setModalOpen(true);
+  }
+
+  function openEdit(pitch: Pitch) {
+    setEditingPitch(pitch);
+    setModalOpen(true);
+  }
+
   const stats = [
     {
       label: "Today's Bookings",
-      value: "0",
-      sub: "No bookings yet today",
+      value: '0',
+      sub: 'No bookings yet today',
       icon: Calendar,
-      iconBg: "bg-green-100",
-      iconColor: "text-green-600",
+      iconBg: 'bg-green-100',
+      iconColor: 'text-green-600',
     },
     {
-      label: "Active Courts",
-      value: String(venueCourts.filter((c) => c.isActive).length),
-      sub: `${venueCourts.length} total courts`,
+      label: 'Active Courts',
+      value: String(venuePitches.filter((c) => c.isActive).length),
+      sub: `${venuePitches.length} total courts`,
       icon: LayoutGrid,
-      iconBg: "bg-blue-100",
-      iconColor: "text-blue-600",
+      iconBg: 'bg-blue-100',
+      iconColor: 'text-blue-600',
     },
     {
-      label: "Monthly Revenue",
-      value: "₨0",
-      sub: "No completed bookings",
+      label: 'Monthly Revenue',
+      value: '₨0',
+      sub: 'No completed bookings',
       icon: TrendingUp,
-      iconBg: "bg-purple-100",
-      iconColor: "text-purple-600",
+      iconBg: 'bg-purple-100',
+      iconColor: 'text-purple-600',
     },
     {
-      label: "Occupancy Rate",
-      value: "0%",
-      sub: "Based on available slots",
+      label: 'Occupancy Rate',
+      value: '0%',
+      sub: 'Based on available slots',
       icon: Clock,
-      iconBg: "bg-amber-100",
-      iconColor: "text-amber-600",
+      iconBg: 'bg-amber-100',
+      iconColor: 'text-amber-600',
     },
   ];
 
@@ -85,7 +121,7 @@ export default function VenueDetailPage({ params }: { params: Promise<{ id: stri
     <div className="p-8">
       {/* Back nav */}
       <button
-        onClick={() => router.push("/dashboard/venues")}
+        onClick={() => router.push('/dashboard/venues')}
         className="inline-flex items-center gap-1.5 font-dm text-sm text-gray-500 hover:text-gray-900 transition-colors mb-6"
       >
         <ArrowLeft size={15} />
@@ -107,13 +143,11 @@ export default function VenueDetailPage({ params }: { params: Promise<{ id: stri
               <h1 className="font-syne font-bold text-2xl text-gray-900">{venue.name}</h1>
               <span
                 className={`inline-flex items-center gap-1.5 text-xs font-dm font-medium px-2.5 py-1 rounded-full ${
-                  venue.isActive
-                    ? "bg-green-100 text-green-700"
-                    : "bg-gray-100 text-gray-500"
+                  venue.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
                 }`}
               >
-                <span className={`w-1.5 h-1.5 rounded-full ${venue.isActive ? "bg-green-500" : "bg-gray-400"}`} />
-                {venue.isActive ? "Active" : "Inactive"}
+                <span className={`w-1.5 h-1.5 rounded-full ${venue.isActive ? 'bg-green-500' : 'bg-gray-400'}`} />
+                {venue.isActive ? 'Active' : 'Inactive'}
               </span>
             </div>
             <p className="flex items-center gap-1.5 font-dm text-sm text-gray-500">
@@ -164,28 +198,28 @@ export default function VenueDetailPage({ params }: { params: Promise<{ id: stri
           <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
               <h2 className="font-syne font-semibold text-base text-gray-900">Courts</h2>
-              <Link
-                href={`/dashboard/venues/${id}/courts/new`}
+              <button
+                onClick={openAdd}
                 className="inline-flex items-center gap-1.5 bg-green-500 hover:bg-green-400 text-black font-dm text-sm font-semibold px-3.5 py-2 rounded-xl transition-colors"
               >
                 <Plus size={15} />
-                Add Court
-              </Link>
+                Add Pitch
+              </button>
             </div>
 
-            {venueCourts.length === 0 ? (
+            {venuePitches.length === 0 ? (
               <EmptyState
                 icon={LayoutGrid}
                 title="No courts yet"
                 description="Add your first court so players can start booking."
                 action={
-                  <Link
-                    href={`/dashboard/venues/${id}/courts/new`}
-                    className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-400 text-black font-syne font-semibold px-5 py-2.5 rounded-full text-sm transition-colors"
+                  <button
+                    onClick={openAdd}
+                    className="inline-flex items-center gap-1.5 bg-green-500 hover:bg-green-400 text-black font-dm text-sm font-semibold px-3.5 py-2 rounded-xl transition-colors"
                   >
-                    <Plus size={16} />
-                    Add Court
-                  </Link>
+                    <Plus size={15} />
+                    Add Pitch
+                  </button>
                 }
               />
             ) : (
@@ -213,44 +247,44 @@ export default function VenueDetailPage({ params }: { params: Promise<{ id: stri
                   </tr>
                 </thead>
                 <tbody>
-                  {venueCourts.map((court) => (
-                    <tr key={court.id} className="border-b border-gray-100 last:border-0">
+                  {venuePitches.map((pitch) => (
+                    <tr key={pitch.id} className="border-b border-gray-100 last:border-0">
                       <td className="py-4 px-6">
-                        <p className="font-dm text-sm font-semibold text-gray-900">{court.name}</p>
+                        <p className="font-dm text-sm font-semibold text-gray-900">{pitch.name}</p>
                       </td>
                       <td className="py-4 pr-4">
-                        <p className="font-dm text-sm text-gray-600 capitalize">
-                          {court.surface.replace(/_/g, " ")}
+                        <p className="font-dm text-sm text-gray-600 capitalize">{pitch.surface.replace(/_/g, ' ')}</p>
+                      </td>
+                      <td className="py-4 pr-4">
+                        <p className="font-dm text-sm text-gray-600">
+                          {pitch.capacity}v{pitch.capacity}
                         </p>
                       </td>
                       <td className="py-4 pr-4">
-                        <p className="font-dm text-sm text-gray-600">{court.capacity}v{court.capacity}</p>
-                      </td>
-                      <td className="py-4 pr-4">
                         <p className="font-dm text-sm font-medium text-gray-900">
-                          ₨{court.pricePerHour.toLocaleString()}
+                          ₨{pitch.pricePerHour.toLocaleString()}
                         </p>
                       </td>
                       <td className="py-4 pr-4">
                         <span
                           className={`inline-flex items-center gap-1.5 text-xs font-dm font-medium px-2.5 py-1 rounded-full ${
-                            court.isActive
-                              ? "bg-green-100 text-green-700"
-                              : "bg-gray-100 text-gray-500"
+                            pitch.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
                           }`}
                         >
-                          <span className={`w-1.5 h-1.5 rounded-full ${court.isActive ? "bg-green-500" : "bg-gray-400"}`} />
-                          {court.isActive ? "Active" : "Inactive"}
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${pitch.isActive ? 'bg-green-500' : 'bg-gray-400'}`}
+                          />
+                          {pitch.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </td>
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-2 justify-end">
-                          <Link
-                            href={`/dashboard/venues/${id}/courts/${court.id}/edit`}
+                          <button
+                            onClick={() => openEdit(pitch)}
                             className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors"
                           >
                             <Pencil size={13} />
-                          </Link>
+                          </button>
                           <button className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors">
                             <MoreHorizontal size={13} />
                           </button>
@@ -286,21 +320,9 @@ export default function VenueDetailPage({ params }: { params: Promise<{ id: stri
           <div className="bg-white border border-gray-200 rounded-2xl p-5">
             <h3 className="font-syne font-semibold text-sm text-gray-900 mb-4">Quick Actions</h3>
             <div className="space-y-2">
-              <QuickAction
-                icon={Plus}
-                label="Add a Court"
-                href={`/dashboard/venues/${id}/courts/new`}
-              />
-              <QuickAction
-                icon={Calendar}
-                label="View Schedule"
-                href={`/dashboard/venues/${id}/schedule`}
-              />
-              <QuickAction
-                icon={Pencil}
-                label="Edit Venue Details"
-                href={`/dashboard/venues/${id}/edit`}
-              />
+              <QuickAction icon={Plus} label="Add a pitch" onClick={openAdd} />
+              <QuickAction icon={Calendar} label="View Schedule" href={`/dashboard/venues/${id}/schedule`} />
+              <QuickAction icon={Pencil} label="Edit Venue Details" href={`/dashboard/venues/${id}/edit`} />
             </div>
           </div>
 
@@ -324,19 +346,23 @@ export default function VenueDetailPage({ params }: { params: Promise<{ id: stri
           )}
         </div>
       </div>
+
+      {modalOpen && (
+        <PitchModal
+          venueId={id}
+          pitch={editingPitch}
+          onSubmit={handlePitchSubmit}
+          onClose={() => {
+            setModalOpen(false);
+            setEditingPitch(undefined);
+          }}
+        />
+      )}
     </div>
   );
 }
 
-function InfoRow({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: string;
-}) {
+function InfoRow({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string }) {
   return (
     <div className="flex items-start gap-2.5">
       <Icon size={15} className="text-gray-400 shrink-0 mt-0.5" />
@@ -352,20 +378,36 @@ function QuickAction({
   icon: Icon,
   label,
   href,
+  onClick,
 }: {
   icon: React.ElementType;
   label: string;
-  href: string;
+  href?: string;
+  onClick?: () => void;
 }) {
-  return (
-    <Link
-      href={href}
-      className="flex items-center gap-3 px-3 py-2.5 rounded-xl font-dm text-sm text-gray-700 hover:bg-gray-50 transition-colors group"
-    >
+  const className =
+    'flex items-center gap-3 px-3 py-2.5 rounded-xl font-dm text-sm text-gray-700 hover:bg-gray-50 transition-colors group';
+
+  const content = (
+    <>
       <span className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center group-hover:bg-green-100 transition-colors">
         <Icon size={14} className="text-gray-500 group-hover:text-green-600 transition-colors" />
       </span>
       {label}
+    </>
+  );
+
+  if (onClick) {
+    return (
+      <button onClick={onClick} className={className}>
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <Link href={href!} className={className}>
+      {content}
     </Link>
   );
 }

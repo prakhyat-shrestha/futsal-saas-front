@@ -1,13 +1,24 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { apiRequest } from '@/lib/api';
-import { Venue, Court, CourtSurface } from '@/types';
+import { Venue, Pitch, SurfaceType } from '@/types';
 
 import { useAuthStore } from '@/store/authStore';
 
+
+export interface CreatePitchPayload {
+  name: string;
+  description?: string;
+  surface: string;
+  capacity: number;
+  pricePerHour: number;
+  amenities: string[];
+}
+
 interface VenueState {
   venues: Venue[];
-  courts: Court[];
+  //courts: Court[];
+  pitches: Pitch[];
   isLoading: boolean;
   error: string | null;
 
@@ -19,12 +30,17 @@ interface VenueState {
   updateVenue: (id: string, data: Partial<Venue>) => Promise<Venue>;
   deleteVenue: (id: string) => Promise<void>;
 
-  addCourt: (court: Omit<Court, 'id'>) => void;
-  updateCourt: (id: string, data: Partial<Court>) => void;
-  deleteCourt: (id: string) => void;
+  //addCourt: (court: Omit<Court, 'id'>) => void;
+  //updateCourt: (id: string, data: Partial<Court>) => void;
+  fetchPitches: (venueId: string) => Promise<void>;
+  addPitch: (venueId: string, data: CreatePitchPayload) => Promise<Pitch>;
+  updatePitch: (pitchId: string, data: Partial<CreatePitchPayload>) => Promise<Pitch>;
+
+  //deleteCourt: (id: string) => void;
 
   getVenuesByTenant: (tenantId: string) => Venue[];
-  getCourtsByVenue: (venueId: string) => Court[];
+  //getCourtsByVenue: (venueId: string) => Court[];
+  getPitchesByVenue: (venueId: string) => Pitch[];
 
   reset: () => void;
 }
@@ -72,7 +88,8 @@ export const useVenueStore = create<VenueState>()(
   persist(
     (set, get) => ({
       venues: [],
-      courts: MOCK_COURTS,
+      pitches: [],
+      //courts: MOCK_COURTS,
       selectedVenueId: 'v1',
 
       isLoading: false,
@@ -140,26 +157,76 @@ export const useVenueStore = create<VenueState>()(
         }
       },
 
-      addCourt: (data) => {
-        const court: Court = { ...data, id: `c_${Date.now()}` };
-        set((s) => ({ courts: [...s.courts, court] }));
+      fetchPitches: async (venueId) => {
+        set({ isLoading: true, error: null });
+        try {
+          const pitches = await apiRequest<Pitch[]>(`/venues/${venueId}/pitches`, {
+            method: 'GET',
+          });
+          set((s) => ({
+            // merge — keep pitches from other venues, replace this venue's
+            pitches: [...s.pitches.filter((p) => p.venueId !== venueId), ...pitches],
+            isLoading: false,
+          }));
+        } catch (err: any) {
+          set({ isLoading: false, error: err.message ?? 'Failed to load pitches.' });
+        }
       },
 
-      updateCourt: (id, data) => set((s) => ({ courts: s.courts.map((c) => (c.id === id ? { ...c, ...data } : c)) })),
+      addPitch: async (venueId, data) => {
+        set({ isLoading: true, error: null });
+        try {
+          const pitch = await apiRequest<Pitch>(`/venues/${venueId}/pitches`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+          });
+          set((s) => ({ pitches: [...s.pitches, pitch], isLoading: false }));
+          return pitch;
+        } catch (err: any) {
+          set({ isLoading: false, error: err.message ?? 'Failed to add pitch.' });
+          throw err;
+        }
+      },
 
-      deleteCourt: (id) => set((s) => ({ courts: s.courts.filter((c) => c.id !== id) })),
+      // addCourt: (data) => {
+      //   const court: Court = { ...data, id: `c_${Date.now()}` };
+      //   set((s) => ({ courts: [...s.courts, court] }));
+      // },
+
+      // updateCourt: (id, data) => set((s) => ({ courts: s.courts.map((c) => (c.id === id ? { ...c, ...data } : c)) })),
+
+      updatePitch: async (pitchId, data) => {
+        set({ isLoading: true, error: null });
+        try {
+          const pitch = await apiRequest<Pitch>(`/pitches/${pitchId}`, {
+            method: 'PATCH',
+            body: JSON.stringify(data),
+          });
+          set((s) => ({
+            pitches: s.pitches.map((p) => (p.id === pitchId ? pitch : p)),
+            isLoading: false,
+          }));
+          return pitch;
+        } catch (err: any) {
+          set({ isLoading: false, error: err.message ?? 'Failed to update pitch.' });
+          throw err;
+        }
+      },
+     // deleteCourt: (id) => set((s) => ({ courts: s.courts.filter((c) => c.id !== id) })),
 
       getVenuesByTenant: (tenantId) => get().venues.filter((v) => v.ownerId === tenantId),
-      getCourtsByVenue: (venueId) => get().courts.filter((c) => c.venueId === venueId),
+      //getCourtsByVenue: (venueId) => get().courts.filter((c) => c.venueId === venueId),
+       getPitchesByVenue: (venueId) => get().pitches.filter((p) => p.venueId === venueId),
       reset: () =>
         set({
           venues: [],
+          pitches:[],
           selectedVenueId: null,
           isLoading: false,
           error: null,
         }),
     }),
 
-    { name: 'futsal-venues', partialize: (state) => ({ courts: state.courts }) }
+    { name: 'futsal-venues', partialize: (state) => ({ pitches: state.pitches }),}
   )
 );

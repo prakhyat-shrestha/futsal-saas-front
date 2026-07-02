@@ -1,6 +1,8 @@
 // ─── Auth & Roles ────────────────────────────────────────────────────────────
 export type UserRole = "ADMIN" | "VENUE_OWNER" | "PLAYER";
 
+export type SurfaceType = "GRASS" | "ARTIFICIAL" | "FUTSAL" | "INDOOR";
+
 export interface User {
   id: string;
   name: string;
@@ -40,18 +42,39 @@ export interface Venue {
 }
 
 // ─── Court ───────────────────────────────────────────────────────────────────
-export type CourtSurface = "artificial_grass" | "hardwood" | "rubber" | "concrete";
+//export type CourtSurface = "artificial_grass" | "hardwood" | "rubber" | "concrete";
 
-export interface Court {
+// export interface Court {
+//   id: string;
+//   venueId: string;
+//   name: string;
+//   surface: CourtSurface;
+//   capacity: number; // players per side e.g. 5
+//   pricePerHour: number;
+//   isActive: boolean;
+//   imageUrl?: string;
+// }
+
+// ─── Pitch ───────────────────────────────────────────────────────────────────
+
+export interface Pitch {
   id: string;
   venueId: string;
   name: string;
-  surface: CourtSurface;
-  capacity: number; // players per side e.g. 5
-  pricePerHour: number;
+  description?: string;
+  surface: SurfaceType;
+  capacity: number;
+  pricePerHour: string; // Prisma Decimal comes as string over JSON
   isActive: boolean;
-  imageUrl?: string;
+  imageUrls: string[];
+  amenities: string[];
+  createdAt: string;
+  updatedAt: string;
 }
+
+// keep Court as alias so nothing else breaks yet
+// once you've updated all consumers, remove this
+export type Court = Pitch;
 
 // ─── Booking ─────────────────────────────────────────────────────────────────
 export type BookingStatus = "pending" | "confirmed" | "cancelled" | "completed";
@@ -85,3 +108,4 @@ export interface DashboardStats {
   activeCourts: number;
   totalVenues: number;
 }
+
