@@ -22,6 +22,8 @@ export default function MyVenuesPage() {
   const venuesByOwner = user ? getVenuesByTenant(user.id) : [];
   const filteredVenues = venuesByOwner.filter((v) => v.name.toLowerCase().includes(search.toLowerCase()));
 
+ 
+
   return (
     <div className="p-8">
       {/* Header */}

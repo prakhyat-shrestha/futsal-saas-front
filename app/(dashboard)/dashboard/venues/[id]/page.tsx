@@ -27,10 +27,12 @@ import { PitchModal } from '@/components/dashboard/PitchModal';
 import { Pitch } from '@/types';
 import { CreatePitchPayload } from '@/store/venueStore';
 
+import { DeletePitchButton } from '@/components/dashboard/DeletePitchButton';
+
 export default function VenueDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const { venues, pitches, fetchVenues, fetchPitches, addPitch, updatePitch, isLoading } = useVenueStore();
+  const { venues, pitches, fetchVenues, fetchPitches, addPitch, updatePitch, deletePitch, isLoading } = useVenueStore();
   const [hasChecked, setHasChecked] = useState(false);
 
   // modal state
@@ -66,7 +68,7 @@ export default function VenueDetailPage({ params }: { params: Promise<{ id: stri
 
   async function handlePitchSubmit(venueId: string, data: CreatePitchPayload, pitchId?: string) {
     if (pitchId) {
-      await updatePitch(pitchId, data);
+      await updatePitch(venueId, pitchId, data);
     } else {
       await addPitch(venueId, data);
     }
@@ -116,6 +118,8 @@ export default function VenueDetailPage({ params }: { params: Promise<{ id: stri
       iconColor: 'text-amber-600',
     },
   ];
+
+  console.log('fetch pitches', pitches);
 
   return (
     <div className="p-8">
@@ -285,6 +289,7 @@ export default function VenueDetailPage({ params }: { params: Promise<{ id: stri
                           >
                             <Pencil size={13} />
                           </button>
+                          <DeletePitchButton onConfirm={() => deletePitch(id,pitch.id)} />
                           <button className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors">
                             <MoreHorizontal size={13} />
                           </button>

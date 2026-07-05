@@ -5,7 +5,6 @@ import { Venue, Pitch, SurfaceType } from '@/types';
 
 import { useAuthStore } from '@/store/authStore';
 
-
 export interface CreatePitchPayload {
   name: string;
   description?: string;
@@ -34,9 +33,9 @@ interface VenueState {
   //updateCourt: (id: string, data: Partial<Court>) => void;
   fetchPitches: (venueId: string) => Promise<void>;
   addPitch: (venueId: string, data: CreatePitchPayload) => Promise<Pitch>;
-  updatePitch: (pitchId: string, data: Partial<CreatePitchPayload>) => Promise<Pitch>;
-
+  updatePitch: (venueId: string, pitchId: string, data: Partial<CreatePitchPayload>) => Promise<Pitch>;
   //deleteCourt: (id: string) => void;
+  deletePitch: (venueId: string,pitchId: string) => Promise<void>;
 
   getVenuesByTenant: (tenantId: string) => Venue[];
   //getCourtsByVenue: (venueId: string) => Court[];
@@ -160,12 +159,12 @@ export const useVenueStore = create<VenueState>()(
       fetchPitches: async (venueId) => {
         set({ isLoading: true, error: null });
         try {
-          const pitches = await apiRequest<Pitch[]>(`/venues/${venueId}/pitches`, {
+          const venue = await apiRequest<{ pitches: Pitch[] }>(`/venues/${venueId}`, {
             method: 'GET',
           });
+          const pitches = venue.pitches ?? [];
           set((s) => ({
-            // merge — keep pitches from other venues, replace this venue's
-            pitches: [...s.pitches.filter((p) => p.venueId !== venueId), ...pitches],
+            pitches: [...pitches],
             isLoading: false,
           }));
         } catch (err: any) {
@@ -195,10 +194,10 @@ export const useVenueStore = create<VenueState>()(
 
       // updateCourt: (id, data) => set((s) => ({ courts: s.courts.map((c) => (c.id === id ? { ...c, ...data } : c)) })),
 
-      updatePitch: async (pitchId, data) => {
+      updatePitch: async (venueId, pitchId, data) => {
         set({ isLoading: true, error: null });
         try {
-          const pitch = await apiRequest<Pitch>(`/pitches/${pitchId}`, {
+          const pitch = await apiRequest<Pitch>(`/venues/pitches/${venueId}/${pitchId}`, {
             method: 'PATCH',
             body: JSON.stringify(data),
           });
@@ -212,21 +211,35 @@ export const useVenueStore = create<VenueState>()(
           throw err;
         }
       },
-     // deleteCourt: (id) => set((s) => ({ courts: s.courts.filter((c) => c.id !== id) })),
+      // deleteCourt: (id) => set((s) => ({ courts: s.courts.filter((c) => c.id !== id) })),
+
+      deletePitch: async (venueId,pitchId) => {
+        set({ isLoading: true, error: null });
+        try {
+          await apiRequest<void>(`/venues/pitches/${venueId}/${pitchId}`, { method: 'DELETE' });
+          set((s) => ({
+            pitches: s.pitches.filter((p) => p.id !== pitchId),
+            isLoading: false,
+          }));
+        } catch (err: any) {
+          set({ isLoading: false, error: err.message ?? 'Failed to delete pitch.' });
+          throw err;
+        }
+      },
 
       getVenuesByTenant: (tenantId) => get().venues.filter((v) => v.ownerId === tenantId),
       //getCourtsByVenue: (venueId) => get().courts.filter((c) => c.venueId === venueId),
-       getPitchesByVenue: (venueId) => get().pitches.filter((p) => p.venueId === venueId),
+      getPitchesByVenue: (venueId) => get().pitches.filter((p) => p.venueId === venueId),
       reset: () =>
         set({
           venues: [],
-          pitches:[],
+          pitches: [],
           selectedVenueId: null,
           isLoading: false,
           error: null,
         }),
     }),
 
-    { name: 'futsal-venues', partialize: (state) => ({ pitches: state.pitches }),}
+    { name: 'futsal-venues', partialize: (state) => ({ pitches: state.pitches }) }
   )
 );

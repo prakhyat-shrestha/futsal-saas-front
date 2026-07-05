@@ -104,6 +104,7 @@ export function PitchModal({
   }
 
   async function handleSubmit() {
+    console.log("validate",validate())
     if (!validate()) return;
     setIsSubmitting(true);
     try {
