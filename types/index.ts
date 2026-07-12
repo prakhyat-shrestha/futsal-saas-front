@@ -32,7 +32,7 @@ export interface Venue {
   description?:string;
   address: string;
   city: string;
-  imageUrl?: string;
+  imageUrls?: string[];
   latitude: number;  // "06:00"
   longitude: number; // "23:00"
   phone?:string;

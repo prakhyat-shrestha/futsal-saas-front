@@ -29,7 +29,7 @@ export default function MyVenuesPage() {
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="font-syne font-bold text-3xl text-gray-900 mb-1">My Pitches</h1>
+          <h1 className="font-syne font-bold text-3xl text-gray-900 mb-1">My Futsal Venues</h1>
           <p className="font-dm text-gray-500 text-sm">
             Manage your venues, check performance, and update availability.
           </p>

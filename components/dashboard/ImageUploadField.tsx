@@ -6,6 +6,8 @@ import { ImagePlus, X, AlertCircle } from "lucide-react";
 interface Props {
   files: File[];
   onChange: (files: File[]) => void;
+  existingUrls?: string[];                    // ← now an array
+  onRemoveExisting?: (url: string) => void;    // ← now takes the url being removed
   maxFiles?: number;
   maxSizeMB?: number;
 }
@@ -13,6 +15,8 @@ interface Props {
 export function ImageUploadField({
   files,
   onChange,
+  existingUrls = [],
+  onRemoveExisting,
   maxFiles = 5,
   maxSizeMB = 10,
 }: Props) {
@@ -20,7 +24,10 @@ export function ImageUploadField({
   const [dragOver, setDragOver] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
 
-  function validate(incoming: File[]): { valid: File[]; errors: string[] } {
+  const totalCount = existingUrls.length + files.length;
+  const remaining = Math.max(0, maxFiles - totalCount);
+
+  function validate(incoming: File[]): { valid: File[]; errs: string[] } {
     const errs: string[] = [];
     const valid: File[] = [];
 
@@ -41,7 +48,8 @@ export function ImageUploadField({
   function addFiles(incoming: File[]) {
     const { valid, errs } = validate(incoming);
     setErrors(errs);
-    const combined = [...files, ...valid].slice(0, maxFiles);
+    const room = maxFiles - existingUrls.length;
+    const combined = [...files, ...valid].slice(0, Math.max(0, room));
     onChange(combined);
   }
 
@@ -60,10 +68,44 @@ export function ImageUploadField({
     e.target.value = "";
   }
 
-  const remaining = maxFiles - files.length;
+  const hasExisting = existingUrls.length > 0;
+  const hasNewFiles = files.length > 0;
 
   return (
     <div className="space-y-3">
+      {/* Existing saved images */}
+      {hasExisting && (
+        <div className="space-y-2">
+          <p className="font-dm text-xs font-medium text-gray-500">
+            Current {existingUrls.length > 1 ? "Images" : "Image"}
+          </p>
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+            {existingUrls.map((url, i) => (
+              <div key={url} className="relative group aspect-square">
+                <img
+                  src={url}
+                  alt="Current venue"
+                  className="w-full h-full object-cover rounded-xl"
+                />
+                {i === 0 && (
+                  <span className="absolute bottom-1.5 left-1.5 bg-black/50 text-white text-[10px] font-dm font-medium px-1.5 py-0.5 rounded-full">
+                    Primary
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => onRemoveExisting?.(url)}
+                  className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Remove image"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Upload zone */}
       {remaining > 0 && (
         <button
@@ -90,9 +132,10 @@ export function ImageUploadField({
               JPG, PNG, WEBP · max {maxSizeMB}MB each · up to {maxFiles} photos
             </p>
           </div>
-          {files.length > 0 && (
+          {totalCount > 0 && (
             <p className="font-dm text-xs text-gray-400">
-              {files.length} selected · {remaining} slot{remaining !== 1 ? "s" : ""} remaining
+              {totalCount} selected · {remaining} slot
+              {remaining !== 1 ? "s" : ""} remaining
             </p>
           )}
         </button>
@@ -122,42 +165,35 @@ export function ImageUploadField({
         </div>
       )}
 
-      {/* Previews */}
-      {files.length > 0 && (
-        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-          {files.map((file, i) => (
-            <div key={i} className="relative group aspect-square">
-              <img
-                src={URL.createObjectURL(file)}
-                alt={file.name}
-                className="w-full h-full object-cover rounded-xl"
-              />
-              {/* Primary badge */}
-              {i === 0 && (
-                <span className="absolute bottom-1.5 left-1.5 bg-green-400 text-black text-[10px] font-dm font-bold px-1.5 py-0.5 rounded-full">
-                  Primary
-                </span>
-              )}
-              {/* Remove button */}
-              <button
-                type="button"
-                onClick={() => removeFile(i)}
-                className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <X size={12} />
-              </button>
-            </div>
-          ))}
-          {/* Add more slot */}
-          {remaining > 0 && files.length > 0 && (
-            <button
-              type="button"
-              onClick={() => inputRef.current?.click()}
-              className="aspect-square rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center text-gray-400 hover:border-green-400 hover:text-green-500 transition-colors"
-            >
-              <ImagePlus size={20} />
-            </button>
-          )}
+      {/* New file previews */}
+      {hasNewFiles && (
+        <div className="space-y-2">
+          <p className="font-dm text-xs font-medium text-gray-500">
+            New {files.length > 1 ? "Images" : "Image"}
+          </p>
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+            {files.map((file, i) => (
+              <div key={i} className="relative group aspect-square">
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt={file.name}
+                  className="w-full h-full object-cover rounded-xl"
+                />
+                {!hasExisting && i === 0 && (
+                  <span className="absolute bottom-1.5 left-1.5 bg-green-400 text-black text-[10px] font-dm font-bold px-1.5 py-0.5 rounded-full">
+                    Primary
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => removeFile(i)}
+                  className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

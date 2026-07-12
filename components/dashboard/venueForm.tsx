@@ -42,11 +42,13 @@ const EMPTY_VALUES: VenueFormValues = {
 
 export function VenueForm({
   initialValues = EMPTY_VALUES,
+  existingImageUrls,
   submitLabel = 'Publish Venue',
   submittingLabel = 'Publishing...',
   onSubmit,
 }: {
   initialValues?: VenueFormValues;
+  existingImageUrls?: string[]; // ← new
   submitLabel?: string;
   submittingLabel?: string;
   onSubmit: (payload: VenueFormPayload) => Promise<void>;
@@ -55,7 +57,7 @@ export function VenueForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
-
+  const [currentImageUrls, setCurrentImageUrls] = useState<string[]>(existingImageUrls ?? []);
 
   function update<K extends keyof VenueFormValues>(key: K, value: VenueFormValues[K]) {
     setValues((v) => ({ ...v, [key]: value }));
@@ -74,7 +76,6 @@ export function VenueForm({
     if (isNaN(lat) || lat < -90 || lat > 90) next.latitude = 'Latitude must be between -90 and 90.';
     if (isNaN(lng) || lng < -180 || lng > 180) next.longitude = 'Longitude must be between -180 and 180.';
 
-    
     if (values.email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(values.email)) {
       next.email = 'Enter a valid email address.';
     }
@@ -93,7 +94,7 @@ export function VenueForm({
       longitude: parseFloat(values.longitude),
       phone: values.phone.trim() || undefined,
       email: values.email.trim() || undefined,
-      images: values.images, 
+      images: values.images,
     };
   }
 
@@ -234,6 +235,8 @@ export function VenueForm({
           <ImageUploadField
             files={values.images}
             onChange={(files) => update('images', files)}
+            existingUrls={currentImageUrls}
+            onRemoveExisting={(url) => setCurrentImageUrls((urls) => urls.filter((u) => u !== url))}
             maxFiles={5}
             maxSizeMB={10}
           />
