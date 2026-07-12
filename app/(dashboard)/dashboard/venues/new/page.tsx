@@ -18,7 +18,7 @@ export default function NewVenuePage() {
     const venue = await addVenue({
       ownerId: user.id,
       ...venueData,
-      imageUrl: undefined,
+      imageUrls: undefined,
       isActive: true,
     });
 

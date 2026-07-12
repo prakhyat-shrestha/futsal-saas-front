@@ -25,7 +25,7 @@ import { EmptyState } from '@/components/shared/EmptyState';
 
 import { PitchModal } from '@/components/dashboard/PitchModal';
 import { Pitch } from '@/types';
-import { CreatePitchPayload } from '@/store/venueStore';
+import { CreatePitchPayloadWithImages } from '@/store/venueStore';
 
 import { DeletePitchButton } from '@/components/dashboard/DeletePitchButton';
 
@@ -66,11 +66,21 @@ export default function VenueDetailPage({ params }: { params: Promise<{ id: stri
 
   if (!venue) notFound();
 
-  async function handlePitchSubmit(venueId: string, data: CreatePitchPayload, pitchId?: string) {
+ async function handlePitchSubmit(venueId: string, data: CreatePitchPayloadWithImages, pitchId?: string) {
+    // Step 1: separate images from the rest of the payload
+    const { images, ...pitchData } = data;
+
+    // Step 2: create or update the pitch (no images yet)
+    let pitch;
     if (pitchId) {
-      await updatePitch(venueId, pitchId, data);
+      pitch = await updatePitch(venueId, pitchId, pitchData);
     } else {
-      await addPitch(venueId, data);
+      pitch = await addPitch(venueId, pitchData);
+    }
+
+    // Step 3: upload images if any were selected
+    if (images.length > 0) {
+      await uploadPitchImages(venueId, pitch.id, images);
     }
   }
 
@@ -415,4 +425,33 @@ function QuickAction({
       {content}
     </Link>
   );
+}
+
+
+async function uploadPitchImages(venueId: string,pitchId: string, files: File[]): Promise<void> {
+  const formData = new FormData();
+  files.forEach((file) => formData.append("images", file));
+
+  // Note: apiRequest sends Content-Type: application/json by default
+  // For multipart we need a raw fetch here — don't set Content-Type manually,
+  // let the browser set it with the correct boundary
+  const token = (await import("@/store/authStore"))
+    .useAuthStore.getState().accessToken;
+
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/venues/pitches/${pitchId}/images`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        // deliberately NO Content-Type — browser sets multipart/form-data + boundary automatically
+      },
+      body: formData,
+    }
+  );
+
+  if (!res.ok) {
+    const json = await res.json().catch(() => null);
+    throw new Error(json?.message ?? "Failed to upload venue images.");
+  }
 }

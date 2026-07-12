@@ -1,27 +1,19 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { X, Layers } from "lucide-react";
-import { Pitch, SurfaceType } from "@/types";
-import { CreatePitchPayload } from "@/store/venueStore";
+import { useEffect, useState } from 'react';
+import { X, Layers } from 'lucide-react';
+import { Pitch, SurfaceType } from '@/types';
+import { CreatePitchPayload, CreatePitchPayloadWithImages } from '@/store/venueStore';
+import { ImageUploadField } from '@/components/dashboard/ImageUploadField';
 
 const SURFACE_OPTIONS: { value: SurfaceType; label: string }[] = [
-  { value: "GRASS", label: "Natural Grass" },
-  { value: "ARTIFICIAL", label: "Artificial Turf" },
-  { value: "FUTSAL", label: "Futsal Court" },
-  { value: "INDOOR", label: "Indoor Court" },
+  { value: 'GRASS', label: 'Natural Grass' },
+  { value: 'ARTIFICIAL', label: 'Artificial Turf' },
+  { value: 'FUTSAL', label: 'Futsal Court' },
+  { value: 'INDOOR', label: 'Indoor Court' },
 ];
 
-const AMENITY_OPTIONS = [
-  "Showers",
-  "Changing Rooms",
-  "Parking",
-  "Floodlights",
-  "Seating",
-  "Café",
-  "First Aid",
-  "WiFi",
-];
+const AMENITY_OPTIONS = ['Showers', 'Changing Rooms', 'Parking', 'Floodlights', 'Seating', 'Café', 'First Aid', 'WiFi'];
 
 interface FormValues {
   name: string;
@@ -30,15 +22,17 @@ interface FormValues {
   capacity: string;
   pricePerHour: string;
   amenities: string[];
+  images: File[];
 }
 
 const EMPTY: FormValues = {
-  name: "",
-  description: "",
-  surface: "ARTIFICIAL",
-  capacity: "",
-  pricePerHour: "",
+  name: '',
+  description: '',
+  surface: 'ARTIFICIAL',
+  capacity: '',
+  pricePerHour: '',
   amenities: [],
+  images: [],
 };
 
 export function PitchModal({
@@ -49,7 +43,7 @@ export function PitchModal({
 }: {
   venueId: string;
   pitch?: Pitch; // if provided → Edit mode, else → Add mode
-  onSubmit: (venueId: string, data: CreatePitchPayload, pitchId?: string) => Promise<void>;
+  onSubmit: (venueId: string, data: CreatePitchPayloadWithImages, pitchId?: string) => Promise<void>;
   onClose: () => void;
 }) {
   const isEdit = !!pitch;
@@ -58,63 +52,64 @@ export function PitchModal({
     pitch
       ? {
           name: pitch.name,
-          description: pitch.description ?? "",
+          description: pitch.description ?? '',
           surface: pitch.surface,
           capacity: String(pitch.capacity),
           pricePerHour: String(pitch.pricePerHour),
           amenities: pitch.amenities,
+          images: [],
         }
       : EMPTY
   );
+  const [currentImageUrls, setCurrentImageUrls] = useState<string[]>(pitch?.imageUrls ?? []);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // close on Escape
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+      if (e.key === 'Escape') onClose();
     }
-    document.addEventListener("keydown", handleKey);
-    return () => document.removeEventListener("keydown", handleKey);
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
   }, [onClose]);
 
   function update<K extends keyof FormValues>(key: K, value: FormValues[K]) {
     setValues((v) => ({ ...v, [key]: value }));
-    setErrors((e) => ({ ...e, [key]: "" }));
+    setErrors((e) => ({ ...e, [key]: '' }));
   }
 
   function toggleAmenity(amenity: string) {
     setValues((v) => ({
       ...v,
-      amenities: v.amenities.includes(amenity)
-        ? v.amenities.filter((a) => a !== amenity)
-        : [...v.amenities, amenity],
+      amenities: v.amenities.includes(amenity) ? v.amenities.filter((a) => a !== amenity) : [...v.amenities, amenity],
     }));
   }
 
   function validate(): boolean {
     const next: Record<string, string> = {};
-    if (!values.name.trim()) next.name = "Name is required.";
+    if (!values.name.trim()) next.name = 'Name is required.';
     if (!values.capacity || isNaN(Number(values.capacity)) || Number(values.capacity) < 1)
-      next.capacity = "Enter a valid capacity.";
+      next.capacity = 'Enter a valid capacity.';
     if (!values.pricePerHour || isNaN(Number(values.pricePerHour)) || Number(values.pricePerHour) <= 0)
-      next.pricePerHour = "Enter a valid price.";
+      next.pricePerHour = 'Enter a valid price.';
     setErrors(next);
     return Object.keys(next).length === 0;
   }
 
   async function handleSubmit() {
-    console.log("validate",validate())
+    console.log('validate', validate());
     if (!validate()) return;
     setIsSubmitting(true);
     try {
-      const payload: CreatePitchPayload = {
+      const payload: CreatePitchPayloadWithImages = {
         name: values.name.trim(),
         description: values.description.trim() || undefined,
         surface: values.surface,
         capacity: Number(values.capacity),
         pricePerHour: Number(values.pricePerHour),
         amenities: values.amenities,
+        images: values.images,
       };
       await onSubmit(venueId, payload, pitch?.id);
       onClose();
@@ -134,11 +129,9 @@ export function PitchModal({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
           <div>
-            <h2 className="font-syne font-bold text-lg text-gray-900">
-              {isEdit ? "Edit Pitch" : "Add New Pitch"}
-            </h2>
+            <h2 className="font-syne font-bold text-lg text-gray-900">{isEdit ? 'Edit Pitch' : 'Add New Pitch'}</h2>
             <p className="font-dm text-xs text-gray-400 mt-0.5">
-              {isEdit ? "Update pitch details." : "Add a court players can book."}
+              {isEdit ? 'Update pitch details.' : 'Add a court players can book.'}
             </p>
           </div>
           <button
@@ -155,7 +148,7 @@ export function PitchModal({
           <Field label="Pitch Name" error={errors.name}>
             <input
               value={values.name}
-              onChange={(e) => update("name", e.target.value)}
+              onChange={(e) => update('name', e.target.value)}
               placeholder="e.g., Court A"
               className={inputClass(!!errors.name)}
             />
@@ -165,7 +158,7 @@ export function PitchModal({
           <Field label="Description" optional>
             <textarea
               value={values.description}
-              onChange={(e) => update("description", e.target.value)}
+              onChange={(e) => update('description', e.target.value)}
               placeholder="Optional details about this pitch..."
               rows={2}
               className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 font-dm text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500/50 transition-colors resize-none"
@@ -178,7 +171,7 @@ export function PitchModal({
               <Layers size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
               <select
                 value={values.surface}
-                onChange={(e) => update("surface", e.target.value as SurfaceType)}
+                onChange={(e) => update('surface', e.target.value as SurfaceType)}
                 className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 font-dm text-sm text-gray-900 focus:outline-none focus:border-green-500/50 transition-colors appearance-none"
               >
                 {SURFACE_OPTIONS.map((s) => (
@@ -197,7 +190,7 @@ export function PitchModal({
                 type="number"
                 min={1}
                 value={values.capacity}
-                onChange={(e) => update("capacity", e.target.value)}
+                onChange={(e) => update('capacity', e.target.value)}
                 placeholder="10"
                 className={inputClass(!!errors.capacity)}
               />
@@ -208,7 +201,7 @@ export function PitchModal({
                 min={0}
                 step="0.01"
                 value={values.pricePerHour}
-                onChange={(e) => update("pricePerHour", e.target.value)}
+                onChange={(e) => update('pricePerHour', e.target.value)}
                 placeholder="1200"
                 className={inputClass(!!errors.pricePerHour)}
               />
@@ -227,8 +220,8 @@ export function PitchModal({
                     onClick={() => toggleAmenity(amenity)}
                     className={`px-3.5 py-1.5 rounded-full text-xs font-dm font-medium border transition-colors ${
                       selected
-                        ? "bg-green-500 text-black border-green-500"
-                        : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
+                        ? 'bg-green-500 text-black border-green-500'
+                        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
                     }`}
                   >
                     {amenity}
@@ -236,6 +229,17 @@ export function PitchModal({
                 );
               })}
             </div>
+          </Field>
+
+          <Field label="Photos" optional>
+            <ImageUploadField
+              files={values.images}
+              onChange={(files) => update('images', files)}
+              existingUrls={currentImageUrls}
+              onRemoveExisting={(url) => setCurrentImageUrls((urls) => urls.filter((u) => u !== url))}
+              maxFiles={5}
+              maxSizeMB={10}
+            />
           </Field>
         </div>
 
@@ -252,9 +256,7 @@ export function PitchModal({
             disabled={isSubmitting}
             className="flex-1 inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-400 disabled:opacity-50 text-black font-syne font-semibold py-2.5 rounded-xl text-sm transition-colors"
           >
-            {isSubmitting
-              ? isEdit ? "Saving..." : "Adding..."
-              : isEdit ? "Save Changes" : "Add Pitch"}
+            {isSubmitting ? (isEdit ? 'Saving...' : 'Adding...') : isEdit ? 'Save Changes' : 'Add Pitch'}
           </button>
         </div>
       </div>
@@ -287,6 +289,6 @@ function Field({
 
 function inputClass(hasError: boolean) {
   return `w-full bg-gray-50 border rounded-xl px-4 py-3 font-dm text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500/50 transition-colors ${
-    hasError ? "border-red-300" : "border-gray-200"
+    hasError ? 'border-red-300' : 'border-gray-200'
   }`;
 }

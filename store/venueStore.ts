@@ -14,6 +14,11 @@ export interface CreatePitchPayload {
   amenities: string[];
 }
 
+// What the form/modal submits (includes images for the upload step)
+export interface CreatePitchPayloadWithImages extends CreatePitchPayload {
+  images: File[];
+}
+
 interface VenueState {
   venues: Venue[];
   //courts: Court[];
