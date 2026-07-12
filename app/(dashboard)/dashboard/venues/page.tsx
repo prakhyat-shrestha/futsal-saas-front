@@ -128,9 +128,9 @@ function VenueCard({ venue }: { venue: any }) {
     <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
       {/* Image */}
       <div className="relative h-40">
-        {venue.imageUrl ? (
+        {venue.imageUrls.length > 0 ? (
           <img
-            src={venue.imageUrl}
+            src={venue.imageUrls[0]}
             alt={venue.name}
             className={`w-full h-full object-cover ${!isActive ? 'grayscale' : ''}`}
           />

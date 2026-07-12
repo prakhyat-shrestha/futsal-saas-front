@@ -25,7 +25,7 @@ interface VenueState {
 
   setSelectedVenue: (id: string) => void;
   fetchVenues: () => Promise<void>;
-  addVenue: (venue: Omit<Venue, 'id' | 'createdAt'>) => void;
+  addVenue: (venue: Omit<Venue, "id" | "createdAt" | "updatedAt">) => Promise<Venue>;
   updateVenue: (id: string, data: Partial<Venue>) => Promise<Venue>;
   deleteVenue: (id: string) => Promise<void>;
 

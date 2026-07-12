@@ -1,16 +1,8 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import {
-  Building2,
-  MapPin,
-  Navigation,
-  Phone,
-  Mail,
-  FileText,
-  Rocket,
-  CheckCircle2,
-} from "lucide-react";
+import { useState } from 'react';
+import { Building2, MapPin, Navigation, Phone, Mail, FileText, Rocket, CheckCircle2 } from 'lucide-react';
+import { ImageUploadField } from '@/components/dashboard/ImageUploadField';
 
 export interface VenueFormValues {
   name: string;
@@ -21,6 +13,7 @@ export interface VenueFormValues {
   longitude: string;
   phone: string;
   email: string;
+  images: File[];
 }
 
 export interface VenueFormPayload {
@@ -32,23 +25,25 @@ export interface VenueFormPayload {
   longitude: number;
   phone?: string;
   email?: string;
+  images: File[];
 }
 
 const EMPTY_VALUES: VenueFormValues = {
-  name: "",
-  description: "",
-  address: "",
-  city: "",
-  latitude: "",
-  longitude: "",
-  phone: "",
-  email: "",
+  name: '',
+  description: '',
+  address: '',
+  city: '',
+  latitude: '',
+  longitude: '',
+  phone: '',
+  email: '',
+  images: [],
 };
 
 export function VenueForm({
   initialValues = EMPTY_VALUES,
-  submitLabel = "Publish Venue",
-  submittingLabel = "Publishing...",
+  submitLabel = 'Publish Venue',
+  submittingLabel = 'Publishing...',
   onSubmit,
 }: {
   initialValues?: VenueFormValues;
@@ -61,6 +56,7 @@ export function VenueForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
 
+
   function update<K extends keyof VenueFormValues>(key: K, value: VenueFormValues[K]) {
     setValues((v) => ({ ...v, [key]: value }));
   }
@@ -68,18 +64,19 @@ export function VenueForm({
   function validate(): boolean {
     const next: Record<string, string> = {};
 
-    if (values.name.trim().length < 2) next.name = "Name must be at least 2 characters.";
-    if (values.name.length > 200) next.name = "Name must be under 200 characters.";
-    if (values.address.trim().length < 5) next.address = "Address must be at least 5 characters.";
-    if (values.city.trim().length < 2) next.city = "City must be at least 2 characters.";
+    if (values.name.trim().length < 2) next.name = 'Name must be at least 2 characters.';
+    if (values.name.length > 200) next.name = 'Name must be under 200 characters.';
+    if (values.address.trim().length < 5) next.address = 'Address must be at least 5 characters.';
+    if (values.city.trim().length < 2) next.city = 'City must be at least 2 characters.';
 
     const lat = parseFloat(values.latitude);
     const lng = parseFloat(values.longitude);
-    if (isNaN(lat) || lat < -90 || lat > 90) next.latitude = "Latitude must be between -90 and 90.";
-    if (isNaN(lng) || lng < -180 || lng > 180) next.longitude = "Longitude must be between -180 and 180.";
+    if (isNaN(lat) || lat < -90 || lat > 90) next.latitude = 'Latitude must be between -90 and 90.';
+    if (isNaN(lng) || lng < -180 || lng > 180) next.longitude = 'Longitude must be between -180 and 180.';
 
-    if (values.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
-      next.email = "Enter a valid email address.";
+    
+    if (values.email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(values.email)) {
+      next.email = 'Enter a valid email address.';
     }
 
     setErrors(next);
@@ -96,6 +93,7 @@ export function VenueForm({
       longitude: parseFloat(values.longitude),
       phone: values.phone.trim() || undefined,
       email: values.email.trim() || undefined,
+      images: values.images, 
     };
   }
 
@@ -114,8 +112,8 @@ export function VenueForm({
     setIsLocating(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        update("latitude", pos.coords.latitude.toFixed(6));
-        update("longitude", pos.coords.longitude.toFixed(6));
+        update('latitude', pos.coords.latitude.toFixed(6));
+        update('longitude', pos.coords.longitude.toFixed(6));
         setIsLocating(false);
       },
       () => setIsLocating(false)
@@ -131,7 +129,7 @@ export function VenueForm({
             <InputWithIcon
               icon={Building2}
               value={values.name}
-              onChange={(v) => update("name", v)}
+              onChange={(v) => update('name', v)}
               placeholder="e.g., Central Park Arena"
               error={!!errors.name}
             />
@@ -141,7 +139,7 @@ export function VenueForm({
               <FileText size={16} className="absolute left-3.5 top-3.5 text-gray-400" />
               <textarea
                 value={values.description}
-                onChange={(e) => update("description", e.target.value)}
+                onChange={(e) => update('description', e.target.value)}
                 placeholder="Tell players what makes your venue great..."
                 rows={3}
                 className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 font-dm text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500/50 transition-colors resize-none"
@@ -155,7 +153,7 @@ export function VenueForm({
             <InputWithIcon
               icon={MapPin}
               value={values.address}
-              onChange={(v) => update("address", v)}
+              onChange={(v) => update('address', v)}
               placeholder="Full street address"
               error={!!errors.address}
             />
@@ -164,7 +162,7 @@ export function VenueForm({
             <InputWithIcon
               icon={Building2}
               value={values.city}
-              onChange={(v) => update("city", v)}
+              onChange={(v) => update('city', v)}
               placeholder="e.g., Kathmandu"
               error={!!errors.city}
             />
@@ -179,7 +177,7 @@ export function VenueForm({
               className="inline-flex items-center gap-1.5 text-xs font-dm font-medium text-green-600 hover:text-green-700 disabled:opacity-50 transition-colors"
             >
               <Navigation size={13} />
-              {isLocating ? "Locating..." : "Use my current location"}
+              {isLocating ? 'Locating...' : 'Use my current location'}
             </button>
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -188,10 +186,10 @@ export function VenueForm({
                 type="number"
                 step="any"
                 value={values.latitude}
-                onChange={(e) => update("latitude", e.target.value)}
+                onChange={(e) => update('latitude', e.target.value)}
                 placeholder="27.717245"
                 className={`w-full bg-gray-50 border rounded-xl px-4 py-3 font-dm text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500/50 transition-colors ${
-                  errors.latitude ? "border-red-300" : "border-gray-200"
+                  errors.latitude ? 'border-red-300' : 'border-gray-200'
                 }`}
               />
             </Field>
@@ -200,10 +198,10 @@ export function VenueForm({
                 type="number"
                 step="any"
                 value={values.longitude}
-                onChange={(e) => update("longitude", e.target.value)}
+                onChange={(e) => update('longitude', e.target.value)}
                 placeholder="85.323959"
                 className={`w-full bg-gray-50 border rounded-xl px-4 py-3 font-dm text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500/50 transition-colors ${
-                  errors.longitude ? "border-red-300" : "border-gray-200"
+                  errors.longitude ? 'border-red-300' : 'border-gray-200'
                 }`}
               />
             </Field>
@@ -216,7 +214,7 @@ export function VenueForm({
               <InputWithIcon
                 icon={Phone}
                 value={values.phone}
-                onChange={(v) => update("phone", v)}
+                onChange={(v) => update('phone', v)}
                 placeholder="98XXXXXXXX"
               />
             </Field>
@@ -224,12 +222,24 @@ export function VenueForm({
               <InputWithIcon
                 icon={Mail}
                 value={values.email}
-                onChange={(v) => update("email", v)}
+                onChange={(v) => update('email', v)}
                 placeholder="venue@example.com"
                 error={!!errors.email}
               />
             </Field>
           </div>
+        </FormSection>
+
+        <FormSection step={4} title="Photos" optional>
+          <ImageUploadField
+            files={values.images}
+            onChange={(files) => update('images', files)}
+            maxFiles={5}
+            maxSizeMB={10}
+          />
+          <p className="font-dm text-xs text-gray-400 mt-3">
+            The first photo will be used as the venue's primary image.
+          </p>
         </FormSection>
       </div>
 
@@ -239,13 +249,10 @@ export function VenueForm({
           <h3 className="font-syne font-semibold text-base text-gray-900 mb-4">Venue Summary</h3>
 
           <div className="space-y-4 mb-6">
-            <SummaryItem
-              title="Visibility"
-              desc="Venue will be live immediately after publishing."
-            />
+            <SummaryItem title="Visibility" desc="Venue will be live immediately after publishing." />
             <SummaryItem
               title="Location"
-              desc={values.city ? `Listed in ${values.city}.` : "Add a city so players can find this venue."}
+              desc={values.city ? `Listed in ${values.city}.` : 'Add a city so players can find this venue.'}
             />
           </div>
 
@@ -333,7 +340,7 @@ function InputWithIcon({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className={`w-full bg-gray-50 border rounded-xl pl-10 pr-4 py-3 font-dm text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500/50 transition-colors ${
-          error ? "border-red-300" : "border-gray-200"
+          error ? 'border-red-300' : 'border-gray-200'
         }`}
       />
     </div>
