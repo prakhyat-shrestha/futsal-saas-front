@@ -119,7 +119,7 @@ export default function VenueDetailPage({ params }: { params: Promise<{ id: stri
     },
   ];
 
-  console.log('fetch pitches', pitches);
+  console.log('fetch venue', venue);
 
   return (
     <div className="p-8">
@@ -136,8 +136,8 @@ export default function VenueDetailPage({ params }: { params: Promise<{ id: stri
       <div className="flex flex-wrap items-start justify-between gap-4 mb-8">
         <div className="flex items-start gap-4">
           <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center shrink-0">
-            {venue.imageUrl ? (
-              <img src={venue.imageUrl} alt={venue.name} className="w-full h-full object-cover rounded-2xl" />
+            {venue.imageUrls && venue.imageUrls.length > 0 ? (
+              <img src={venue.imageUrls[0]} alt={venue.name} className="w-full h-full object-cover rounded-2xl" />
             ) : (
               <Building2 size={24} className="text-gray-400" />
             )}
