@@ -202,7 +202,7 @@ export const useVenueStore = create<VenueState>()(
       updatePitch: async (venueId, pitchId, data) => {
         set({ isLoading: true, error: null });
         try {
-          const pitch = await apiRequest<Pitch>(`/venues/pitches/${venueId}/${pitchId}`, {
+          const pitch = await apiRequest<Pitch>(`/venues/${venueId}/pitches/${pitchId}`, {
             method: 'PATCH',
             body: JSON.stringify(data),
           });
@@ -221,7 +221,7 @@ export const useVenueStore = create<VenueState>()(
       deletePitch: async (venueId,pitchId) => {
         set({ isLoading: true, error: null });
         try {
-          await apiRequest<void>(`/venues/pitches/${venueId}/${pitchId}`, { method: 'DELETE' });
+          await apiRequest<void>(`/venues/${venueId}/pitches/${pitchId}`, { method: 'DELETE' });
           set((s) => ({
             pitches: s.pitches.filter((p) => p.id !== pitchId),
             isLoading: false,
