@@ -29,6 +29,10 @@ import { CreatePitchPayloadWithImages } from '@/store/venueStore';
 
 import { DeletePitchButton } from '@/components/dashboard/DeletePitchButton';
 
+// add to imports
+import { Eye } from 'lucide-react';
+import { PitchDrawer } from '@/components/dashboard/PitchDrawer';
+
 export default function VenueDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
@@ -38,6 +42,9 @@ export default function VenueDetailPage({ params }: { params: Promise<{ id: stri
   // modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [editingPitch, setEditingPitch] = useState<Pitch | undefined>(undefined);
+
+  // add alongside existing modal state
+  const [drawerPitch, setDrawerPitch] = useState<Pitch | undefined>(undefined);
 
   // useEffect(() => {
   //   if (venues.length === 0) {
@@ -66,7 +73,7 @@ export default function VenueDetailPage({ params }: { params: Promise<{ id: stri
 
   if (!venue) notFound();
 
- async function handlePitchSubmit(venueId: string, data: CreatePitchPayloadWithImages, pitchId?: string) {
+  async function handlePitchSubmit(venueId: string, data: CreatePitchPayloadWithImages, pitchId?: string) {
     // Step 1: separate images from the rest of the payload
     const { images, ...pitchData } = data;
 
@@ -141,7 +148,6 @@ export default function VenueDetailPage({ params }: { params: Promise<{ id: stri
         <ArrowLeft size={15} />
         Back to My Venues
       </button>
-
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-4 mb-8">
         <div className="flex items-start gap-4">
@@ -188,7 +194,6 @@ export default function VenueDetailPage({ params }: { params: Promise<{ id: stri
           </Link>
         </div>
       </div>
-
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {stats.map((stat) => {
@@ -205,7 +210,6 @@ export default function VenueDetailPage({ params }: { params: Promise<{ id: stri
           );
         })}
       </div>
-
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Courts list */}
         <div className="lg:col-span-2">
@@ -293,13 +297,23 @@ export default function VenueDetailPage({ params }: { params: Promise<{ id: stri
                       </td>
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-2 justify-end">
+                          {/* View — opens drawer */}
+                          <button
+                            onClick={() => setDrawerPitch(pitch)}
+                            className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors"
+                            aria-label="View pitch details"
+                          >
+                            <Eye size={13} />
+                          </button>
+                          {/* Edit — opens modal */}
                           <button
                             onClick={() => openEdit(pitch)}
                             className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors"
                           >
                             <Pencil size={13} />
                           </button>
-                          <DeletePitchButton onConfirm={() => deletePitch(id,pitch.id)} />
+                          {/* Delete */}
+                          <DeletePitchButton onConfirm={() => deletePitch(id, pitch.id)} />
                           <button className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors">
                             <MoreHorizontal size={13} />
                           </button>
@@ -361,7 +375,6 @@ export default function VenueDetailPage({ params }: { params: Promise<{ id: stri
           )}
         </div>
       </div>
-
       {modalOpen && (
         <PitchModal
           venueId={id}
@@ -370,6 +383,17 @@ export default function VenueDetailPage({ params }: { params: Promise<{ id: stri
           onClose={() => {
             setModalOpen(false);
             setEditingPitch(undefined);
+          }}
+        />
+      )}
+      // at the very bottom of the returned JSX, after the PitchModal:
+      {drawerPitch && (
+        <PitchDrawer
+          pitch={drawerPitch}
+          onClose={() => setDrawerPitch(undefined)}
+          onEdit={(pitch) => {
+            setDrawerPitch(undefined);
+            openEdit(pitch);
           }}
         />
       )}
@@ -427,31 +451,26 @@ function QuickAction({
   );
 }
 
-
-async function uploadPitchImages(venueId: string,pitchId: string, files: File[]): Promise<void> {
+async function uploadPitchImages(venueId: string, pitchId: string, files: File[]): Promise<void> {
   const formData = new FormData();
-  files.forEach((file) => formData.append("images", file));
+  files.forEach((file) => formData.append('images', file));
 
   // Note: apiRequest sends Content-Type: application/json by default
   // For multipart we need a raw fetch here — don't set Content-Type manually,
   // let the browser set it with the correct boundary
-  const token = (await import("@/store/authStore"))
-    .useAuthStore.getState().accessToken;
+  const token = (await import('@/store/authStore')).useAuthStore.getState().accessToken;
 
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/venues/pitches/${pitchId}/images`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        // deliberately NO Content-Type — browser sets multipart/form-data + boundary automatically
-      },
-      body: formData,
-    }
-  );
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/venues/pitches/${pitchId}/images`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      // deliberately NO Content-Type — browser sets multipart/form-data + boundary automatically
+    },
+    body: formData,
+  });
 
   if (!res.ok) {
     const json = await res.json().catch(() => null);
-    throw new Error(json?.message ?? "Failed to upload venue images.");
+    throw new Error(json?.message ?? 'Failed to upload venue images.');
   }
 }
