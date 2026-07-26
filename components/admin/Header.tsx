@@ -1,10 +1,19 @@
 "use client";
 
 import { Search, Bell, Settings } from "lucide-react";
+import { SidebarProps } from "@/types";
 
-export function AdminHeader() {
+
+export function AdminHeader({
+  showSidebar,
+  setShowSidebar,
+}:SidebarProps) {
+ 
   return (
     <header className="h-20 bg-gray-50 flex items-center justify-between px-8 border-b border-gray-100">
+    
+      <button onClick={() => setShowSidebar(!showSidebar)} className={`md:hidden mr-2 ${ showSidebar ? "ml-64":"ml-0"}`}>☰ </button>
+      
       <div className="relative w-full max-w-md">
         <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
         <input

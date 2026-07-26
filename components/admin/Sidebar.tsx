@@ -13,6 +13,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
+import { SidebarProps } from "@/types";
 
 const NAV_ITEMS = [
   { href: "/admin", label: "Dashboard", icon: LayoutGrid },
@@ -23,7 +24,10 @@ const NAV_ITEMS = [
   { href: "/admin/analytics", label: "Analytics", icon: TrendingUp },
 ];
 
-export function AdminSidebar() {
+export function AdminSidebar({
+  showSidebar,
+  setShowSidebar
+}:SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { logout } = useAuthStore();
@@ -34,7 +38,8 @@ export function AdminSidebar() {
   }
 
   return (
-    <aside className="w-64 min-h-screen bg-[#0B1F17] flex flex-col shrink-0">
+    <div className={`${showSidebar ? "block absolute" : "hidden"} md:block`}>
+    <aside  className={`w-64 max-h-screen min-h-screen bg-[#0B1F17] flex flex-col shrink-0`}>
       {/* Logo */}
       <div className="px-6 py-6">
         <span className="font-syne font-extrabold text-xl text-green-400 tracking-tight">
@@ -88,5 +93,6 @@ export function AdminSidebar() {
         </button>
       </div>
     </aside>
+    </div>
   );
 }

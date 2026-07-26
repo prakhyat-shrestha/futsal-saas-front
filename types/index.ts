@@ -109,3 +109,9 @@ export interface DashboardStats {
   totalVenues: number;
 }
 
+//---------------admin Sidebar Navigation-----------------------------------------
+export interface SidebarProps {
+  showSidebar : boolean;
+  setShowSidebar: React.Dispatch<React.SetStateAction<boolean>>;
+}
+

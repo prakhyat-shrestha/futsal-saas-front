@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/store/authStore";
 
 const NAV_ITEMS = [
   { href: "/play", label: "Find a Pitch" },
@@ -10,7 +11,15 @@ const NAV_ITEMS = [
 ];
 
 export function PlayerHeader() {
+  const router = useRouter()
+  const {logout} = useAuthStore();
   const pathname = usePathname();
+
+  
+  const handleLogout = () => {
+    logout();
+    router.push('/');
+  };
 
   return (
     <header className="bg-white border-b border-gray-100 sticky top-0 z-30">
@@ -37,18 +46,10 @@ export function PlayerHeader() {
         </nav>
 
         <div className="flex items-center gap-4">
-          <Link href="/login" className="font-dm text-sm text-gray-600 hover:text-gray-900 transition-colors">
-            Login
+          <Link href="/" onClick={handleLogout} className="font-dm text-sm text-gray-600 border border-gray-200 rounded-2xl px-4 py-2 hover:text-gray-900 transition-colors">
+            Logout
           </Link>
-          <Link href="/signup">
-            <Button
-              variant="default"
-              size="sm"
-              className="rounded-full bg-green-500 hover:bg-green-400 text-black font-syne font-semibold"
-            >
-              Sign Up
-            </Button>
-          </Link>
+          
         </div>
       </div>
     </header>
