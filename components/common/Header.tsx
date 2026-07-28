@@ -1,13 +1,9 @@
-"use client";
-
 import { Search, Bell, Settings } from "lucide-react";
+import UserProfile from "./userProfile";
  
-import { useState } from "react";
 
 
-export function AdminHeader() {
-  
- 
+export function Header() {
   return (
     <header className="h-20 bg-gray-50 flex items-center justify-between px-8 border-b border-gray-100">
       <div className="relative w-full max-w-md">
@@ -27,17 +23,7 @@ export function AdminHeader() {
           <Settings size={20} />
         </button>
 
-        <div className="flex items-center gap-3 pl-2">
-          <div className="text-right">
-            <p className="font-dm text-sm font-semibold text-gray-900 leading-tight">Alex Rivera</p>
-            <p className="font-dm text-xs text-gray-400 leading-tight">System Admin</p>
-          </div>
-          <div className="w-10 h-10 rounded-full bg-green-500/10 text-green-700 font-syne font-bold flex items-center justify-center text-sm overflow-hidden shrink-0">
-            <button   >AR</button>
-          </div>
-          
-          
-        </div>
+        <UserProfile/>
       </div>
     </header>
   );

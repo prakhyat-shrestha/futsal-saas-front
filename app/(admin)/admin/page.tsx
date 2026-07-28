@@ -4,7 +4,7 @@ import { RevenueChart } from "@/components/admin/RevenueChart";
 
 export default function AdminDashboardPage() {
   return (
-    <div className="p-8">
+    <div className="p-8 ">
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>

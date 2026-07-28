@@ -18,9 +18,7 @@ export async function apiRequest<T>(
 ): Promise<T> {
   const token = useAuthStore.getState().accessToken;
 
-  //const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${path}`, {
-  // here i have changed. to solve login problems. 
-    const res = await fetch(`/api/v1${path}`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${path}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",

@@ -11,17 +11,20 @@ import { useRouter } from 'next/navigation';
 
 import { EmptyState } from '@/components/shared/EmptyState';
 import { Calendar } from 'lucide-react';
+import { useState } from 'react';
+import UserProfile from '@/components/common/userProfile';
 
 export default function DashboardPage() {
   const { user, logout } = useAuthStore();
   const { bookings } = useBookingStore();
   const { venues, pitches } = useVenueStore();
   const router = useRouter();
+  const [showProfile, setShowProfile] = useState<boolean>(false);
 
-  const handleLogout = () => {
-    logout();
-    router.push('/');
-  };
+  // const handleLogout = () => {
+  //   logout();
+  //   router.push('/');
+  // };
 
   const today = new Date().toISOString().split('T')[0];
   const tenantBookings = bookings.filter((b) => b.tenantId === user?.tenantId);
@@ -71,7 +74,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="p-8 animate-fade-in">
+    <div className=" p-8 animate-fade-in">
       {/* Header */}
       <div className="mb-10 flex items-start justify-between">
         <div>
@@ -80,12 +83,14 @@ export default function DashboardPage() {
           </h1>
           <p className="font-dm text-gray-500 text-sm">{formatDate(today)}</p>
         </div>
-        <button
+        {/* <button
           onClick={handleLogout}
           className="font-dm text-sm px-4 py-2 rounded-xl border border-gray-200 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors shrink-0"
         >
           Logout
-        </button>
+        </button> */}
+         
+      
       </div>
 
       {/* Stats */}
