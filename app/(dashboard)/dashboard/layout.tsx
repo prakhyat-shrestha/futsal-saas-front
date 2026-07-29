@@ -4,7 +4,7 @@ import { Header } from "@/components/common/Header";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    //<RoleGuard allow={["VENUE_OWNER"]}>
+    <RoleGuard allow={["VENUE_OWNER"]}>
     <>
    
     <div className="flex min-h-screen bg-gray-50">
@@ -14,6 +14,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </div>
     </>
       
-    //</RoleGuard>
+    </RoleGuard>
   );
 }

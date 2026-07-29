@@ -11,7 +11,7 @@ import { UserRole } from '@/types';
 export default function UserProfile() {
     const router = useRouter();
     const pathname = usePathname();
-    const { user, logout } = useAuthStore();
+    const { user, logout, hasHydrated } = useAuthStore();
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
     const handleLogout = () => {
@@ -43,7 +43,10 @@ export default function UserProfile() {
         <div>
             {/* //<button onClick={() => { setShowProfile(!showProfile) }} className="flex items-center gap-3 pl-2 bg-gray-50 hover:bg-gray-100 rounded-full h-10 px-2"> */}
             <div className=" sm:ml-6 sm:flex sm:items-center">
-                {user ? (
+                {!hasHydrated ? (
+              // avoid a flash of "Log in / Sign up" before persisted auth state loads
+              <div className="w-32 h-9" />
+            ) :user ? (
                     <div className="relative" ref={menuRef}>
                         <button
                             onClick={() => setMenuOpen((v) => !v)}
