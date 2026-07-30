@@ -37,18 +37,11 @@ export function Navbar() {
               </Link>
             </div>
           </div>
-          <div className="mt-6">
-            <div className="flex items-center gap-6 shrink-0">
-                    <button className="relative text-gray-500 hover:text-gray-900 transition-colors" aria-label="Notifications">
-                      <Bell size={20} />
-                      <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500" />
-                    </button>
-                    <button className="text-gray-500 hover:text-gray-900 transition-colors" aria-label="Settings">
-                      <Settings size={20} />
-                    </button>
+          <div className="flex items-center">
+               
             
                     <UserProfile/>
-                  </div>
+                   
           </div>
 
 

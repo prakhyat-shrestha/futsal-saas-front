@@ -44,9 +44,9 @@ export default function UserProfile() {
             {/* //<button onClick={() => { setShowProfile(!showProfile) }} className="flex items-center gap-3 pl-2 bg-gray-50 hover:bg-gray-100 rounded-full h-10 px-2"> */}
             <div className=" sm:ml-6 sm:flex sm:items-center">
                 {!hasHydrated ? (
-              // avoid a flash of "Log in / Sign up" before persisted auth state loads
-              <div className="w-32 h-9" />
-            ) :user ? (
+                    // avoid a flash of "Log in / Sign up" before persisted auth state loads
+                    <div className="w-32 h-9" />
+                ) : user ? (
                     <div className="relative" ref={menuRef}>
                         <button
                             onClick={() => setMenuOpen((v) => !v)}
@@ -80,14 +80,14 @@ export default function UserProfile() {
                                     </Link>
                                 )}
                                 {pathname.length > 1 && (
-                                     
-                                      <div className="flex items-center gap-2.5 px-4 py-2.5 font-dm text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                                >
-                                    <UserPen size={15} className="text-gray-400" />
-                                    Profile
-                                </div>
+
+                                    <div className="flex items-center gap-2.5 px-4 py-2.5 font-dm text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                    >
+                                        <UserPen size={15} className="text-gray-400" />
+                                        Profile
+                                    </div>
                                 )}
-                               
+
                                 <button
                                     onClick={handleLogout}
                                     className="w-full flex items-center gap-2.5 px-4 py-2.5 font-dm text-sm text-red-500 hover:bg-red-50 transition-colors"
