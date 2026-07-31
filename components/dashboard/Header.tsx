@@ -12,7 +12,7 @@ const ROLE_LABEL: Record<UserRole, string> = {
   ADMIN: "System Admin",
 };
 
-export function AdminHeader() {
+export function OwnerHeader() {
   const router = useRouter();
   const { user, hasHydrated, logout } = useAuthStore();
   const [menuOpen, setMenuOpen] = useState(false);

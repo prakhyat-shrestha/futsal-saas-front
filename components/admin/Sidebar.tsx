@@ -28,10 +28,7 @@ export function AdminSidebar() {
   const router = useRouter();
   const { logout } = useAuthStore();
 
-  function handleLogout() {
-    logout();
-    router.push("/login");
-  }
+
 
   return (
     <aside className="w-64 min-h-screen bg-[#0B1F17] flex flex-col shrink-0">
@@ -79,13 +76,6 @@ export function AdminSidebar() {
           <HelpCircle size={18} />
           Support
         </Link>
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-dm text-sm text-gray-400 hover:bg-white/5 hover:text-white transition-colors"
-        >
-          <LogOut size={18} />
-          Log Out
-        </button>
       </div>
     </aside>
   );
