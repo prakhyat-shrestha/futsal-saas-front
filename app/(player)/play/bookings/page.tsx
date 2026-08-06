@@ -1,44 +1,42 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, CalendarX } from 'lucide-react';
 import { BookingTabs, BookingTab } from '@/components/play/BookingTabs';
 import { FeaturedBookingCard } from '@/components/play/FeaturedBookingCard';
 import { CompactBookingCard } from '@/components/play/CompactBookingCard';
-import { Booking } from '@/components/play/types';
-
+import { Booking as UiBooking } from '@/components/play/types';
+import { Booking as ApiBooking } from '@/types';
+import { apiRequest } from '@/lib/api';
+import { mapApiBookingToUi } from '@/lib/mappers/booking';
 import { EmptyState } from '@/components/shared/EmptyState';
-import { CalendarX } from 'lucide-react';
-
-const MOCK_BOOKINGS: Booking[] = [
-  {
-    id: 'b1',
-    venueName: 'The Goals Hub - Downtown',
-    courtName: 'Pitch 4',
-    pitchType: '5v5',
-    imageUrl: 'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=800&q=80',
-    dateLabel: 'Tomorrow, 14th Nov',
-    timeRange: '19:00 - 20:00',
-    status: 'confirmed',
-  },
-  {
-    id: 'b2',
-    venueName: 'Eastside Arena',
-    courtName: 'Pitch 2',
-    pitchType: '7v7',
-    imageUrl: 'https://images.unsplash.com/photo-1551958219-acbc608c6377?w=800&q=80',
-    dateLabel: 'Sat, 18 Nov',
-    timeRange: '10:00 AM · 90 min',
-    status: 'pending',
-  },
-];
 
 export default function MyBookingsPage() {
   const [tab, setTab] = useState<BookingTab>('Upcoming');
-  const [bookings, setBookings] = useState(MOCK_BOOKINGS);
+  const [bookings, setBookings] = useState<UiBooking[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const apiBookings = await apiRequest<ApiBooking[]>('/bookings', { method: 'GET' });
+        if (!cancelled) setBookings(apiBookings.map(mapApiBookingToUi));
+      } catch (err: any) {
+        if (!cancelled) setError(err.message ?? 'Failed to load bookings.');
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   function handleCancel(id: string) {
+    // TODO: still client-side only — needs PATCH /bookings/:id once that's confirmed
     setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, status: 'cancelled' as const } : b)));
   }
 
@@ -52,7 +50,6 @@ export default function MyBookingsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-10">
-      {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-6 mb-6">
         <div>
           <h1 className="font-syne font-bold text-2xl text-gray-900 mb-1">My Bookings</h1>
@@ -60,9 +57,9 @@ export default function MyBookingsPage() {
         </div>
 
         <div className="flex items-center gap-6 bg-white border border-gray-200 rounded-2xl px-6 py-3">
-          <Stat label="Matches Played" value="24" />
+          <Stat label="Matches Played" value={String(bookings.filter((b) => b.status === 'completed').length)} />
           <div className="w-px h-8 bg-gray-100" />
-          <Stat label="Favorite Venue" value="The Goals Hub" />
+          <Stat label="Favorite Venue" value={mostFrequentVenue(bookings)} />
         </div>
       </div>
 
@@ -70,16 +67,28 @@ export default function MyBookingsPage() {
         <BookingTabs active={tab} onChange={setTab} />
       </div>
 
-      {visibleBookings.length === 0 ? (
+      {error && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 font-dm mb-6">
+          {error}
+        </div>
+      )}
+
+      {isLoading ? (
+        <div className="grid lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 h-64 rounded-2xl bg-gray-100 animate-pulse" />
+          <div className="space-y-5">
+            <div className="h-32 rounded-2xl bg-gray-100 animate-pulse" />
+            <div className="h-32 rounded-2xl bg-gray-100 animate-pulse" />
+          </div>
+        </div>
+      ) : visibleBookings.length === 0 ? (
         <EmptyState icon={CalendarX} title={`No ${tab.toLowerCase()} bookings yet.`} />
       ) : (
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* Featured booking */}
           <div className="lg:col-span-2">
             {featured && <FeaturedBookingCard booking={featured} onCancel={handleCancel} />}
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-5">
             {rest.map((booking) => (
               <CompactBookingCard key={booking.id} booking={booking} onCancel={handleCancel} />
@@ -100,6 +109,13 @@ function Stat({ label, value }: { label: string; value: string }) {
       <p className="font-syne font-bold text-sm text-gray-900">{value}</p>
     </div>
   );
+}
+
+function mostFrequentVenue(bookings: UiBooking[]): string {
+  if (bookings.length === 0) return "—";
+  const counts = new Map<string, number>();
+  for (const b of bookings) counts.set(b.venueName, (counts.get(b.venueName) ?? 0) + 1);
+  return [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0];
 }
 
 function PromoCard() {

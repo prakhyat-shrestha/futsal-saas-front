@@ -77,26 +77,58 @@ export interface Pitch {
 export type Court = Pitch;
 
 // ─── Booking ─────────────────────────────────────────────────────────────────
-export type BookingStatus = "pending" | "confirmed" | "cancelled" | "completed";
+export type BookingStatus = "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED";
 
-export interface TimeSlot {
-  start: string; // "09:00"
-  end: string;   // "10:00"
+// export interface TimeSlot {
+//   start: string; // "09:00"
+//   end: string;   // "10:00"
+// }
+
+export interface BookingPitch {
+  id: string;
+  venueId: string;
+  name: string;
+  description?: string;
+  surface: SurfaceType;
+  capacity: number;
+  pricePerHour: string;
+  isActive: boolean;
+  imageUrls: string[];
+  amenities: string[];
+  venue: {
+    name: string;
+    address: string;
+  };
 }
+
+// export interface Booking {
+//   id: string;
+//   courtId: string;
+//   venueId: string;
+//   tenantId: string;
+//   playerId: string;
+//   playerName: string;
+//   date: string; // "2025-06-15"
+//   timeSlot: TimeSlot;
+//   status: BookingStatus;
+//   totalPrice: number;
+//   notes?: string;
+//   createdAt: string;
+// }
 
 export interface Booking {
   id: string;
-  courtId: string;
-  venueId: string;
-  tenantId: string;
-  playerId: string;
-  playerName: string;
-  date: string; // "2025-06-15"
-  timeSlot: TimeSlot;
+  pitchId: string;
+  userId: string;
+  startTime: string; // ISO datetime
+  endTime: string;   // ISO datetime
+  totalAmount: string; // Decimal-over-JSON, string like Pitch.pricePerHour
   status: BookingStatus;
-  totalPrice: number;
-  notes?: string;
+  notes?: string | null;
   createdAt: string;
+  updatedAt: string;
+  pitch: BookingPitch;
+  payment: unknown | null; // TODO: type this once Payment model/shape is wired up
 }
 
 // ─── Dashboard Stats ─────────────────────────────────────────────────────────

@@ -22,7 +22,7 @@ export interface Pitch {
 
 export function PitchCard({ pitch }: { pitch: Pitch }) {
 
-  console.log("PitchCard pitch:", pitch); // Debugging line to check the pitch prop
+  //console.log("PitchCard pitch:", pitch); // Debugging line to check the pitch prop
   const router = useRouter();
   const setDraft = useBookingDraftStore((s) => s.setDraft);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(pitch.availableSlots[0] ?? null);
