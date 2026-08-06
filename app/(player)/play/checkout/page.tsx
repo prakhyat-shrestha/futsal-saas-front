@@ -64,7 +64,7 @@ export default function CheckoutPage() {
 
     try {
       await bookingPromise; // real await, drives actual control flow
-      router.push('/play/dashboard');
+      router.push('/play');
     } catch (err: any) {
       setError(err.message ?? 'Booking failed. Please try again.');
     } finally {
