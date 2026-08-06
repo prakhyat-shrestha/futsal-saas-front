@@ -1,63 +1,89 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Grid3x3, Map } from "lucide-react";
 import { PitchFilters } from "@/components/play/PitchFilters";
-import { PitchCard, Pitch } from "@/components/play/PitchCard";
+import { PitchCard, Pitch as PitchCardPitch } from "@/components/play/PitchCard";
+import { apiRequest } from "@/lib/api";
+import { SurfaceType } from "@/types";
 
-const MOCK_PITCHES: Pitch[] = [
-  {
-    id: "p1",
-    name: "Apex Arena Central",
-    location: "Marylebone, London",
-    distanceMi: 0.9,
-    rating: 4.9,
-    priceFrom: 4520,
-    pitchType: "5v5",
-    indoor: true,
-    imageUrl: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=800&q=80",
-    availableSlots: ["19:00", "19:30", "20:00", "21:00", "22:00"],
-  },
-  {
-    id: "p2",
-    name: "Velocity Sports Hub",
-    location: "Shoreditch Park, London",
-    distanceMi: 2.1,
-    rating: 4.7,
-    priceFrom: 4860,
-    pitchType: "7v7",
-    indoor: false,
-    imageUrl: "https://images.unsplash.com/photo-1551958219-acbc608c6377?w=800&q=80",
-    availableSlots: ["17:00", "19:30", "21:00"],
-  },
-  {
-    id: "p3",
-    name: "Heritage Field Pro",
-    location: "Greenwich, London",
-    distanceMi: 6.5,
-    rating: 5.0,
-    priceFrom: 4520,
-    pitchType: "5v5",
-    indoor: false,
-    imageUrl: "https://images.unsplash.com/photo-1459865264687-595d652de67e?w=800&q=80",
-    availableSlots: ["20:00", "22:00"],
-  },
-  {
-    id: "p4",
-    name: "Urban Pulse Futsal",
-    location: "Camden Town, London",
-    distanceMi: 1.2,
-    rating: 4.8,
-    priceFrom: 4520,
-    pitchType: "5v5",
-    indoor: true,
-    imageUrl: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=800&q=80",
-    availableSlots: ["19:30", "20:30", "21:00"],
-  },
-];
+// Matches your actual /venues response — pitches are a trimmed subset, not the full Pitch type
+interface ExploreVenuePitch {
+  id: string;
+  name: string;
+  surface: SurfaceType;
+  pricePerHour: string;
+  capacity: number;
+}
+
+interface ExploreVenue {
+  id: string;
+  name: string;
+  city: string;
+  address: string;
+  imageUrls: string[];
+  latitude: number;
+  longitude: number;
+  isActive: boolean;
+  pitches: ExploreVenuePitch[];
+}
+
+function pitchTypeFromCapacity(capacity: number): string {
+  // TODO: no explicit pitchType on Pitch — derived from capacity for now
+  if (capacity <= 5) return "5v5";
+  if (capacity <= 7) return "7v7";
+  return `${capacity}v${capacity}`;
+}
+
+function isIndoor(surface: SurfaceType): boolean {
+  // TODO: guessed from surface — replace with a real `indoor` flag if you add one
+  return surface === "INDOOR" || surface === "FUTSAL";
+}
+
+function flattenVenueToCards(venue: ExploreVenue): PitchCardPitch[] {
+  return (venue.pitches ?? []).map((p) => ({
+    id: p.id,
+    venueId: venue.id,
+    name: p.name,
+    location: venue.city,
+    distanceMi: 0, // TODO: needs geolocation + haversine vs venue.latitude/longitude
+    rating: 0, // TODO: no ratings aggregate yet (venue has _count.reviews but no avg score)
+    priceFrom: Number(p.pricePerHour),
+    pitchType: pitchTypeFromCapacity(p.capacity),
+    indoor: isIndoor(p.surface),
+    imageUrl: venue.imageUrls?.[0] ?? "", // nested pitch has no imageUrls in this response
+    availableSlots: [], // TODO: needs a real availability-by-date query
+  }));
+}
 
 export default function ExplorePitchesPage() {
   const [view, setView] = useState<"grid" | "map">("grid");
+  const [pitches, setPitches] = useState<PitchCardPitch[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const venues = await apiRequest<ExploreVenue[]>("/venues", { method: "GET" });
+        if (!cancelled) {
+          setPitches(venues.filter((v) => v.isActive).flatMap(flattenVenueToCards));
+        }
+      } catch (err: any) {
+        if (!cancelled) setError(err.message ?? "Failed to load pitches.");
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-10">
@@ -67,9 +93,9 @@ export default function ExplorePitchesPage() {
         <div className="flex-1">
           <div className="flex items-start justify-between mb-6">
             <div>
-              <h1 className="font-syne font-bold text-2xl text-gray-900 mb-1">Pitches in London</h1>
+              <h1 className="font-syne font-bold text-2xl text-gray-900 mb-1">Pitches near you</h1>
               <p className="font-dm text-sm text-gray-400">
-                {MOCK_PITCHES.length} venues found for your search
+                {isLoading ? "Loading…" : `${pitches.length} venues found for your search`}
               </p>
             </div>
 
@@ -95,13 +121,31 @@ export default function ExplorePitchesPage() {
             </div>
           </div>
 
-          {view === "grid" ? (
+          {error && (
+            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 font-dm mb-6">
+              {error}
+            </div>
+          )}
+
+          {isLoading ? (
+            <div className="grid sm:grid-cols-2 gap-5">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="h-64 rounded-2xl bg-gray-100 animate-pulse" />
+              ))}
+            </div>
+          ) : view === "grid" ? (
             <>
-              <div className="grid sm:grid-cols-2 gap-5">
-                {MOCK_PITCHES.map((pitch) => (
-                  <PitchCard key={pitch.id} pitch={pitch} />
-                ))}
-              </div>
+              {pitches.length === 0 ? (
+                <div className="h-64 flex items-center justify-center text-sm text-gray-400 font-dm">
+                  No pitches found.
+                </div>
+              ) : (
+                <div className="grid sm:grid-cols-2 gap-5">
+                  {pitches.map((pitch) => (
+                    <PitchCard key={pitch.id} pitch={pitch} />
+                  ))}
+                </div>
+              )}
 
               <div className="flex justify-center mt-8">
                 <button className="px-6 py-2.5 rounded-full border border-gray-200 bg-white font-dm text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">

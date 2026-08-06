@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Star, MapPin } from "lucide-react";
 import { useBookingDraftStore } from "@/store/bookingDraftStore";
 
 export interface Pitch {
   id: string;
+  venueId: string;
   name: string;
   location: string;
   distanceMi: number;
@@ -19,23 +21,27 @@ export interface Pitch {
 }
 
 export function PitchCard({ pitch }: { pitch: Pitch }) {
+
+  console.log("PitchCard pitch:", pitch); // Debugging line to check the pitch prop
   const router = useRouter();
   const setDraft = useBookingDraftStore((s) => s.setDraft);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(pitch.availableSlots[0] ?? null);
 
-    function handleBook() {
+  function handleBook(e: React.MouseEvent) {
+    e.stopPropagation(); // don't trigger the card's Link navigation
+    e.preventDefault();
     if (!selectedSlot) return;
     const [start, end] = [selectedSlot, addOneHour(selectedSlot)];
 
     setDraft({
-      venueId: pitch.id,
+      venueId: pitch.venueId,
       venueName: pitch.name,
-      courtId: `${pitch.id}-court`, // swap for real court id once wired to API
-      courtName: "Pitch 1",
+      courtId: pitch.id,
+      courtName: pitch.name,
       pitchType: pitch.pitchType,
       imageUrl: pitch.imageUrl,
       date: new Date().toISOString().split("T")[0],
-      dateLabel: "Saturday, 18th Nov", // swap for real selected date once a date picker exists
+      dateLabel: "Saturday, 18th Nov", // TODO: swap for real selected date once a date picker exists
       timeRange: `${start} - ${end}`,
       pricePerHour: pitch.priceFrom,
       totalDue: pitch.priceFrom,
@@ -44,8 +50,18 @@ export function PitchCard({ pitch }: { pitch: Pitch }) {
     router.push("/play/checkout");
   }
 
+  function handleSlotClick(e: React.MouseEvent, slot: string) {
+    e.stopPropagation(); // don't trigger the card's Link navigation
+    e.preventDefault();
+    setSelectedSlot(slot);
+  }
+
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+    <Link
+      // href={`/play/venues/${pitch.id}`}
+      href={`/play/pitches/${pitch.venueId}/${pitch.id}`}
+      className="block bg-white border border-gray-200 rounded-2xl overflow-hidden hover:border-gray-300 transition-colors"
+    >
       {/* Image */}
       <div className="relative h-44">
         <img src={pitch.imageUrl} alt={pitch.name} className="w-full h-full object-cover" />
@@ -79,41 +95,42 @@ export function PitchCard({ pitch }: { pitch: Pitch }) {
           Available Today
         </p>
         <div className="flex flex-wrap gap-2 mb-5">
-          {pitch.availableSlots.map((slot) => {
-            const active = selectedSlot === slot;
-            return (
-              <button
-                key={slot}
-                onClick={() => setSelectedSlot(slot)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-dm font-medium border transition-colors ${
-                  active
-                    ? "bg-gray-900 text-white border-gray-900"
-                    : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
-                }`}
-              >
-                {slot}
-              </button>
-            );
-          })}
+          {pitch.availableSlots.length === 0 ? (
+            <p className="font-dm text-xs text-gray-400">No slots available yet</p>
+          ) : (
+            pitch.availableSlots.map((slot) => {
+              const active = selectedSlot === slot;
+              return (
+                <button
+                  key={slot}
+                  onClick={(e) => handleSlotClick(e, slot)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-dm font-medium border transition-colors ${
+                    active
+                      ? "bg-gray-900 text-white border-gray-900"
+                      : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
+                  }`}
+                >
+                  {slot}
+                </button>
+              );
+            })
+          )}
         </div>
 
-        <button  
-        onClick={handleBook}
-        className="w-full bg-green-500 hover:bg-green-400 text-black font-syne font-semibold py-3 rounded-xl text-sm transition-colors">
+        <button
+          onClick={handleBook}
+          disabled={!selectedSlot}
+          className="w-full bg-green-500 hover:bg-green-400 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-black font-syne font-semibold py-3 rounded-xl text-sm transition-colors"
+        >
           Book Instant Pitch
         </button>
       </div>
-    </div>
+    </Link>
   );
 }
-
 
 function addOneHour(time: string): string {
   const [h, m] = time.split(":").map(Number);
   const next = (h + 1) % 24;
   return `${String(next).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
-
-
-
-

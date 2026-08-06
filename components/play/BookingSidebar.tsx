@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Zap } from "lucide-react";
 import { useBookingDraftStore } from "@/store/bookingDraftStore";
+import { formatCurrency } from "@/lib/utils";
 
 const ALL_SLOTS = ["17:00", "18:00", "19:00", "20:00", "21:00", "22:00"];
 const SERVICE_FEE = 2.5;
@@ -121,7 +122,7 @@ export function BookingSidebar({
           </div>
           <div className="flex items-center justify-between mb-5">
             <span className="font-syne font-bold text-sm text-gray-900">Total</span>
-            <span className="font-syne font-bold text-base text-gray-900">£{total.toFixed(2)}</span>
+            <span className="font-syne font-bold text-base text-gray-900">{formatCurrency(total)}</span>
           </div>
 
           <button
@@ -143,7 +144,7 @@ function PriceRow({ label, value }: { label: string; value: number }) {
   return (
     <div className="flex items-center justify-between">
       <span className="font-dm text-sm text-gray-500">{label}</span>
-      <span className="font-dm text-sm text-gray-900">£{value.toFixed(2)}</span>
+      <span className="font-dm text-sm text-gray-900">{formatCurrency(value)}</span>
     </div>
   );
 }
