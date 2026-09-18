@@ -80,12 +80,12 @@ export default function DashboardPage() {
           </h1>
           <p className="font-dm text-gray-500 text-sm">{formatDate(today)}</p>
         </div>
-        <button
+        {/* <button
           onClick={handleLogout}
           className="font-dm text-sm px-4 py-2 rounded-xl border border-gray-200 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors shrink-0"
         >
           Logout
-        </button>
+        </button> */}
       </div>
 
       {/* Stats */}
@@ -158,7 +158,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-6">
             <h2 className="font-syne font-semibold text-lg text-gray-900">Your Venues</h2>
             {user?.role === 'VENUE_OWNER' && (
-              <Link href="/dashboard" className="text-green-600 hover:text-green-700 text-sm font-dm transition-colors">
+              <Link href="/dashboard/venues" className="text-green-600 hover:text-green-700 text-sm font-dm transition-colors">
                 Manage →
               </Link>
             )}

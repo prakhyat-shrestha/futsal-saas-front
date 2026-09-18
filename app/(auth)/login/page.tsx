@@ -51,11 +51,11 @@ export default function LoginPage() {
         </p>
 
         {/* Demo credentials hint */}
-        <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-4 mb-6 text-xs font-dm text-green-700">
+        {/* <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-4 mb-6 text-xs font-dm text-green-700">
           <p className="font-semibold mb-1">Demo credentials:</p>
           <p>Admin: admin@futsalpro.com / password</p>
           <p>Player: player@futsalpro.com / password</p>
-        </div>
+        </div> */}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
